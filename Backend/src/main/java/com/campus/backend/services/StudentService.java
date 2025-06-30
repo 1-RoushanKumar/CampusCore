@@ -14,7 +14,10 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import com.campus.backend.entity.Class; // Ensure this is imported correctly
 
+import java.util.Collections; // Import Collections
 import java.util.List;
+import java.util.Optional; // Import Optional
+import java.util.Comparator; // For sorting student/educator lists in DTO
 import java.util.stream.Collectors;
 
 @Service
@@ -39,15 +42,18 @@ public class StudentService {
         return convertToStudentDto(student);
     }
 
-    public List<ClassDto> getEnrolledClasses(UserDetails userDetails) {
+    // --- MODIFIED: getEnrolledClasses to return Optional<ClassDto> ---
+    public Optional<ClassDto> getEnrolledClass(UserDetails userDetails) {
         User user = userRepository.findByUsername(userDetails.getUsername())
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
         Student student = studentRepository.findByUser(user)
                 .orElseThrow(() -> new ResourceNotFoundException("Student profile not found"));
 
-        return student.getClasses().stream()
-                .map(this::convertToClassDto)
-                .collect(Collectors.toList());
+        // A student is now associated with a single class (clazz)
+        if (student.getClazz() != null) {
+            return Optional.of(convertToClassDto(student.getClazz()));
+        }
+        return Optional.empty(); // Return empty Optional if student is not in a class
     }
 
     public List<FeedbackDto> getFeedbackForStudent(UserDetails userDetails) {
@@ -78,8 +84,8 @@ public class StudentService {
         dto.setEnrollmentDate(student.getEnrollmentDate());
         dto.setGrade(student.getGrade());
         dto.setRole(student.getUser().getRole());
-        // For a student DTO, if you also want enrolled class IDs, you can add it here.
-        // dto.setClassIds(student.getClasses().stream().map(Class::getId).collect(Collectors.toList()));
+        // --- MODIFIED: classId (singular) ---
+        dto.setClassId(student.getClazz() != null ? student.getClazz().getId() : null);
         return dto;
     }
 
@@ -99,12 +105,39 @@ public class StudentService {
                         educatorInfo.setId(educator.getId());
                         educatorInfo.setFirstName(educator.getFirstName());
                         educatorInfo.setLastName(educator.getLastName());
+                        // Include email if the EducatorInfo DTO has it
+                        if (educator.getUser() != null) {
+                            educatorInfo.setEmail(educator.getUser().getEmail());
+                        }
                         return educatorInfo;
                     })
+                    .sorted(Comparator.comparing(ClassDto.EducatorInfo::getLastName)) // Optional: sort
                     .collect(Collectors.toList()));
         } else {
-            dto.setEducators(List.of()); // Ensure it's not null if no educators
+            dto.setEducators(Collections.emptyList()); // Use Collections.emptyList() for immutability
         }
+
+        // --- NEW: Populate students in ClassDto ---
+        if (clazz.getStudents() != null && !clazz.getStudents().isEmpty()) {
+            dto.setStudents(clazz.getStudents().stream()
+                    .map(student -> {
+                        ClassDto.StudentInfo studentInfo = new ClassDto.StudentInfo();
+                        studentInfo.setId(student.getId());
+                        studentInfo.setFirstName(student.getFirstName());
+                        studentInfo.setLastName(student.getLastName());
+                        // Include email if the StudentInfo DTO has it
+                        if (student.getUser() != null) {
+                            studentInfo.setEmail(student.getUser().getEmail());
+                        }
+                        return studentInfo;
+                    })
+                    .sorted(Comparator.comparing(ClassDto.StudentInfo::getLastName)) // Optional: sort
+                    .collect(Collectors.toList()));
+        } else {
+            dto.setStudents(Collections.emptyList()); // Ensure it's not null if no students
+        }
+        // --- END NEW ---
+
         return dto;
     }
 

@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.Optional; // Import Optional
 
 @RestController
 @RequestMapping("/api/student")
@@ -31,11 +32,15 @@ public class StudentController {
         return ResponseEntity.ok(profile);
     }
 
-    @GetMapping("/enrolled-classes")
-    public ResponseEntity<List<ClassDto>> getMyEnrolledClasses(@AuthenticationPrincipal UserDetails userDetails) {
-        List<ClassDto> classes = studentService.getEnrolledClasses(userDetails);
-        return ResponseEntity.ok(classes);
+    // --- MODIFIED ENDPOINT ---
+    @GetMapping("/enrolled-class") // Renamed endpoint to reflect singular class
+    public ResponseEntity<ClassDto> getMyEnrolledClass(@AuthenticationPrincipal UserDetails userDetails) {
+        Optional<ClassDto> classDto = studentService.getEnrolledClass(userDetails); // Call the new method
+        // Handle the Optional: if present, return OK; otherwise, return 404 Not Found or 204 No Content
+        return classDto.map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build()); // Or .orElse(ResponseEntity.noContent().build());
     }
+    // --- END MODIFIED ENDPOINT ---
 
     @GetMapping("/feedback")
     public ResponseEntity<List<FeedbackDto>> getMyFeedback(@AuthenticationPrincipal UserDetails userDetails) {

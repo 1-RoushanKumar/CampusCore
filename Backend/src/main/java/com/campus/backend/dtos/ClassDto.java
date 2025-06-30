@@ -2,7 +2,7 @@ package com.campus.backend.dtos;
 
 import lombok.Data;
 
-import java.util.List; // Import List
+import java.util.List;
 
 @Data
 public class ClassDto {
@@ -11,14 +11,22 @@ public class ClassDto {
     private String classCode;
     private String description;
 
-    // Change from single educator to a list of educators for ManyToMany relationship
-    private List<EducatorInfo> educators; // New field
+    private List<EducatorInfo> educators; // New field for educators
+    private List<StudentInfo> students;   // New field for students
 
-    // Inner class to hold minimal educator info for the DTO
     @Data
     public static class EducatorInfo {
         private Long id;
         private String firstName;
         private String lastName;
+        private String email; // Include email if useful
+    }
+
+    @Data
+    public static class StudentInfo {
+        private Long id;
+        private String firstName;
+        private String lastName;
+        private String email; // Include email if useful
     }
 }

@@ -1,11 +1,10 @@
-// Corrected Class.java
 package com.campus.backend.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.EqualsAndHashCode; // Import EqualsAndHashCode
+import lombok.EqualsAndHashCode;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -27,33 +26,34 @@ public class Class {
     @Column(nullable = false, unique = true)
     private String classCode;
 
-    @Lob // For larger text fields
+    @Lob
     private String description;
 
-    @ManyToMany(mappedBy = "classes", fetch = FetchType.LAZY)
+    // --- CHANGE STARTS HERE ---
+    // Change from ManyToMany(mappedBy="classes") to OneToMany for students
+    @OneToMany(mappedBy = "clazz", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private Set<Student> students = new HashSet<>();
+    // --- CHANGE ENDS HERE ---
 
     @ManyToMany(mappedBy = "classes", fetch = FetchType.LAZY)
     private Set<Educator> educators = new HashSet<>();
 
-    // Helper methods are fine and do not cause the StackOverflowError
+    // --- HELPER METHODS FOR BIDIRECTIONAL MANAGEMENT ---
+    // Adjust addStudent/removeStudent to reflect OneToMany
     public void addStudent(Student student) {
         if (this.students == null) {
             this.students = new HashSet<>();
         }
         this.students.add(student);
-        if (student.getClasses() == null) {
-            student.setClasses(new HashSet<>());
-        }
-        student.getClasses().add(this);
+        student.setClazz(this); // Set the class on the student side
     }
 
     public void removeStudent(Student student) {
         if (this.students != null) {
             this.students.remove(student);
         }
-        if (student.getClasses() != null) {
-            student.getClasses().remove(this);
+        if (student.getClazz() != null && student.getClazz().equals(this)) {
+            student.setClazz(null); // Remove the class reference from the student side
         }
     }
 

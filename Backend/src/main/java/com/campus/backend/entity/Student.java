@@ -1,4 +1,3 @@
-// Corrected Student.java
 package com.campus.backend.entity;
 
 import jakarta.persistence.*;
@@ -8,15 +7,16 @@ import lombok.NoArgsConstructor;
 import lombok.EqualsAndHashCode; // Import EqualsAndHashCode
 
 import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.Set;
+// No longer need Set<Class> for a single class, so remove HashSet and Set imports for classes
+// import java.util.HashSet;
+// import java.util.Set;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
 @Table(name = "students")
-@EqualsAndHashCode(exclude = {"user", "classes"}) // EXCLUDE user (OneToOne) and classes (ManyToMany)
+@EqualsAndHashCode(exclude = {"user", "clazz"}) // EXCLUDE user (OneToOne) and now 'clazz' (ManyToOne)
 public class Student {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -24,7 +24,7 @@ public class Student {
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", referencedColumnName = "id", nullable = false, unique = true)
-    private User user; // Exclude this from equals/hashCode
+    private User user;
 
     @Column(nullable = false)
     private String firstName;
@@ -36,37 +36,16 @@ public class Student {
     private String gender;
     private String phoneNumber;
     private String address;
-    private String profileImageUrl; // Path or URL to the image
+    private String profileImageUrl;
 
     private LocalDate enrollmentDate;
     private String grade;
 
-    @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-    @JoinTable(
-            name = "student_classes",
-            joinColumns = @JoinColumn(name = "student_id"),
-            inverseJoinColumns = @JoinColumn(name = "class_id")
-    )
-    private Set<Class> classes = new HashSet<>(); // Exclude this from equals/hashCode
+    // --- CHANGE STARTS HERE ---
+    @ManyToOne(fetch = FetchType.LAZY) // Student is on the Many side
+    @JoinColumn(name = "class_id") // Foreign key column in students table
+    private Class clazz; // Renamed to 'clazz' to avoid keyword conflict, if not already
+    // --- CHANGE ENDS HERE ---
 
-    // Helper methods are fine
-    public void addClass(Class clazz) {
-        if (this.classes == null) {
-            this.classes = new HashSet<>();
-        }
-        this.classes.add(clazz);
-        if (clazz.getStudents() == null) {
-            clazz.setStudents(new HashSet<>());
-        }
-        clazz.getStudents().add(this);
-    }
-
-    public void removeClass(Class clazz) {
-        if (this.classes != null) {
-            this.classes.remove(clazz);
-        }
-        if (clazz.getStudents() != null) {
-            clazz.getStudents().remove(this);
-        }
-    }
+    // Removed addClass/removeClass helper methods as relationship is no longer ManyToMany
 }
