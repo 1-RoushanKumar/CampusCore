@@ -10,8 +10,5 @@ import java.util.Optional;
 
 @Repository
 public interface ClassRepository extends JpaRepository<Class, Long> {
-    Optional<Class> findByClassCode(String classCode);
-
-    List<Class> findByEducator(Educator educator);
-    // You can add more specific queries here
+    boolean existsByClassCode(String classCode);
 }

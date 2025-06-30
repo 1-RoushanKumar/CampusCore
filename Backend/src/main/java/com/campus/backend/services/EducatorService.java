@@ -5,7 +5,7 @@ import com.campus.backend.entity.*;
 import com.campus.backend.dtos.ClassDto;
 import com.campus.backend.dtos.EducatorDto;
 import com.campus.backend.dtos.StudentDto;
-import com.campus.backend.entity.Class;
+import com.campus.backend.entity.Class; // Ensure this import is correct
 import com.campus.backend.exceptions.ResourceNotFoundException;
 import com.campus.backend.repositories.*;
 import org.springframework.data.domain.Page;
@@ -19,12 +19,13 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.Comparator; // Added for sorting educators by ID in DTO for consistent output
 
 @Service
 public class EducatorService {
 
     private final EducatorRepository educatorRepository;
-    private final ClassRepository classRepository;
+    private final ClassRepository classRepository; // Still needed for class lookup
     private final StudentRepository studentRepository;
     private final FeedbackRepository feedbackRepository;
     private final UserRepository userRepository;
@@ -53,20 +54,24 @@ public class EducatorService {
         Educator educator = educatorRepository.findByUser(user)
                 .orElseThrow(() -> new ResourceNotFoundException("Educator profile not found"));
 
-        List<Class> classes = classRepository.findByEducator(educator);
-        return classes.stream().map(this::convertToClassDto).collect(Collectors.toList());
+        // FIX: A class now has many educators. The educator directly holds the classes they teach.
+        // Leverage the ManyToMany relationship from the Educator side.
+        return educator.getClasses().stream()
+                .map(this::convertToClassDto)
+                .collect(Collectors.toList());
     }
 
     public Page<StudentDto> getStudentsInClass(Long classId, int page, int size) {
         Class clazz = classRepository.findById(classId)
                 .orElseThrow(() -> new ResourceNotFoundException("Class not found with id: " + classId));
 
-        // Since students are eagerly fetched in Class entity or through a custom query
-        // we convert the Set to a List and then apply pagination manually.
+        // The ManyToMany relationship between Class and Student means clazz.getStudents()
+        // will fetch the associated students.
         List<StudentDto> studentDtos = clazz.getStudents().stream()
                 .map(this::convertToStudentDto)
                 .collect(Collectors.toList());
 
+        // Manual pagination remains correct for a Set<Student> converted to List
         int start = Math.min((int) page * size, studentDtos.size());
         int end = Math.min((start + size), studentDtos.size());
         List<StudentDto> paginatedStudents = studentDtos.subList(start, end);
@@ -93,8 +98,10 @@ public class EducatorService {
         Class clazz = classRepository.findById(classId)
                 .orElseThrow(() -> new ResourceNotFoundException("Class not found with id: " + classId));
 
-        // Check if the educator actually teaches this class
-        if (!clazz.getEducator().getId().equals(educator.getId())) {
+        // FIX: Check if the educator actually teaches this class using the ManyToMany relationship
+        boolean educatorTeachesClass = clazz.getEducators().stream()
+                .anyMatch(e -> e.getId().equals(educator.getId()));
+        if (!educatorTeachesClass) {
             throw new IllegalArgumentException("Educator does not teach this class.");
         }
 
@@ -104,7 +111,6 @@ public class EducatorService {
         if (!studentInClass) {
             throw new IllegalArgumentException("Student is not enrolled in this class.");
         }
-
 
         Optional<Feedback> existingFeedback = feedbackRepository.findByEducatorAndStudentAndClazz(educator, student, clazz);
         Feedback feedback;
@@ -137,10 +143,13 @@ public class EducatorService {
         Class clazz = classRepository.findById(classId)
                 .orElseThrow(() -> new ResourceNotFoundException("Class not found with id: " + classId));
 
-        // Ensure the educator teaches the class and student is in the class (redundant check, but good for security)
-        if (!clazz.getEducator().getId().equals(educator.getId())) {
+        // FIX: Ensure the educator teaches the class (same check as above)
+        boolean educatorTeachesClass = clazz.getEducators().stream()
+                .anyMatch(e -> e.getId().equals(educator.getId()));
+        if (!educatorTeachesClass) {
             throw new IllegalArgumentException("Educator does not teach this class.");
         }
+
         boolean studentInClass = clazz.getStudents().stream()
                 .anyMatch(s -> s.getId().equals(student.getId()));
         if (!studentInClass) {
@@ -172,6 +181,10 @@ public class EducatorService {
         dto.setQualification(educator.getQualification());
         dto.setExperienceYears(educator.getExperienceYears());
         dto.setRole(educator.getUser().getRole());
+        // Populate classIds for the EducatorDto
+        dto.setClassIds(educator.getClasses().stream()
+                .map(Class::getId)
+                .collect(Collectors.toList()));
         return dto;
     }
 
@@ -181,10 +194,22 @@ public class EducatorService {
         dto.setClassName(clazz.getClassName());
         dto.setClassCode(clazz.getClassCode());
         dto.setDescription(clazz.getDescription());
-        if (clazz.getEducator() != null) {
-            dto.setEducatorId(clazz.getEducator().getId());
-            dto.setEducatorFirstName(clazz.getEducator().getFirstName());
-            dto.setEducatorLastName(clazz.getEducator().getLastName());
+
+        // FIX: A class now has multiple educators (Set<Educator>)
+        // Collect educator details into a list of EducatorInfo DTOs
+        if (clazz.getEducators() != null && !clazz.getEducators().isEmpty()) {
+            dto.setEducators(clazz.getEducators().stream()
+                    .sorted(Comparator.comparing(Educator::getId)) // Optional: sort for consistent output
+                    .map(educator -> {
+                        ClassDto.EducatorInfo educatorInfo = new ClassDto.EducatorInfo();
+                        educatorInfo.setId(educator.getId());
+                        educatorInfo.setFirstName(educator.getFirstName());
+                        educatorInfo.setLastName(educator.getLastName());
+                        return educatorInfo;
+                    })
+                    .collect(Collectors.toList()));
+        } else {
+            dto.setEducators(List.of()); // Ensure it's not null if no educators
         }
         return dto;
     }
@@ -204,6 +229,10 @@ public class EducatorService {
         dto.setEnrollmentDate(student.getEnrollmentDate());
         dto.setGrade(student.getGrade());
         dto.setRole(student.getUser().getRole());
+        // If you want to include enrolled class IDs in StudentDto for educators, add here
+        dto.setClassIds(student.getClasses().stream()
+                .map(Class::getId)
+                .collect(Collectors.toList()));
         return dto;
     }
 

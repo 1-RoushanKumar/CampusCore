@@ -1,3 +1,6 @@
+// Feedback.java - No changes needed here as it only has ManyToOne relationships,
+// and the problem usually occurs with ManyToMany or OneToOne bidirectional where both sides
+// try to resolve each other's hash codes.
 package com.campus.backend.entity;
 
 import jakarta.persistence.*;
@@ -30,7 +33,7 @@ public class Feedback {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "class_id", nullable = false)
-    private Class clazz; // Renamed to clazz to avoid conflict with Java's Class
+    private Class clazz;
 
     @Lob
     @Column(nullable = false)

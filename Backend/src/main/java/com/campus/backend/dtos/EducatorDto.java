@@ -4,6 +4,7 @@ import com.campus.backend.entity.enums.Role;
 import lombok.Data;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Data
 public class EducatorDto {
@@ -22,4 +23,5 @@ public class EducatorDto {
     private String qualification;
     private Integer experienceYears;
     private Role role = Role.ROLE_EDUCATOR; // Default role
+    private List<Long> classIds; // New field to hold class IDs
 }

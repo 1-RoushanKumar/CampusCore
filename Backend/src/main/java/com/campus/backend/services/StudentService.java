@@ -12,7 +12,7 @@ import com.campus.backend.repositories.StudentRepository;
 import com.campus.backend.repositories.UserRepository;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
-import com.campus.backend.entity.Class;
+import com.campus.backend.entity.Class; // Ensure this is imported correctly
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -78,6 +78,8 @@ public class StudentService {
         dto.setEnrollmentDate(student.getEnrollmentDate());
         dto.setGrade(student.getGrade());
         dto.setRole(student.getUser().getRole());
+        // For a student DTO, if you also want enrolled class IDs, you can add it here.
+        // dto.setClassIds(student.getClasses().stream().map(Class::getId).collect(Collectors.toList()));
         return dto;
     }
 
@@ -87,10 +89,21 @@ public class StudentService {
         dto.setClassName(clazz.getClassName());
         dto.setClassCode(clazz.getClassCode());
         dto.setDescription(clazz.getDescription());
-        if (clazz.getEducator() != null) {
-            dto.setEducatorId(clazz.getEducator().getId());
-            dto.setEducatorFirstName(clazz.getEducator().getFirstName());
-            dto.setEducatorLastName(clazz.getEducator().getLastName());
+
+        // FIX: A class now has multiple educators (Set<Educator>)
+        // Collect educator details into a list of EducatorInfo DTOs
+        if (clazz.getEducators() != null && !clazz.getEducators().isEmpty()) {
+            dto.setEducators(clazz.getEducators().stream()
+                    .map(educator -> {
+                        ClassDto.EducatorInfo educatorInfo = new ClassDto.EducatorInfo();
+                        educatorInfo.setId(educator.getId());
+                        educatorInfo.setFirstName(educator.getFirstName());
+                        educatorInfo.setLastName(educator.getLastName());
+                        return educatorInfo;
+                    })
+                    .collect(Collectors.toList()));
+        } else {
+            dto.setEducators(List.of()); // Ensure it's not null if no educators
         }
         return dto;
     }

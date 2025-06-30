@@ -2,6 +2,7 @@ package com.campus.backend.controller;
 
 import com.campus.backend.dtos.EducatorDto;
 import com.campus.backend.dtos.StudentDto;
+import com.campus.backend.dtos.ClassDto; // Import ClassDto
 import com.campus.backend.services.AdminService;
 import com.campus.backend.services.ImageUploadService;
 import jakarta.validation.Valid;
@@ -13,13 +14,13 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-@RestController()
+@RestController
 @RequestMapping("/api/admin")
 @PreAuthorize("hasRole('ROLE_ADMIN')") // Only accessible by ADMIN role
 public class AdminController {
 
     private final AdminService adminService;
-    private final ImageUploadService imageUploadService;
+    private final ImageUploadService imageUploadService; // Keep this if you have image upload for classes later, or remove if not.
 
     public AdminController(AdminService adminService, ImageUploadService imageUploadService) {
         this.adminService = adminService;
@@ -39,6 +40,8 @@ public class AdminController {
             }
             EducatorDto createdEducator = adminService.createEducator(educatorDto);
             return new ResponseEntity<>(createdEducator, HttpStatus.CREATED);
+        } catch (IllegalArgumentException e) { // Catch specific exceptions for better error messages
+            return new ResponseEntity<>(HttpStatus.CONFLICT); // e.g., username/email exists
         } catch (Exception e) {
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
         }
@@ -67,11 +70,18 @@ public class AdminController {
             if (profileImage != null && !profileImage.isEmpty()) {
                 // First, delete old image if it exists
                 EducatorDto existingEducator = adminService.getEducatorById(id);
-                if (existingEducator.getProfileImageUrl() != null) {
+                if (existingEducator.getProfileImageUrl() != null && !existingEducator.getProfileImageUrl().isEmpty()) {
                     imageUploadService.deleteFile(existingEducator.getProfileImageUrl());
                 }
                 String imageUrl = imageUploadService.uploadFile(profileImage);
                 educatorDto.setProfileImageUrl(imageUrl);
+            } else if (educatorDto.getProfileImageUrl() == null || educatorDto.getProfileImageUrl().isEmpty()) {
+                // If no new image and DTO explicitly sets image to null/empty, delete old one
+                EducatorDto existingEducator = adminService.getEducatorById(id);
+                if (existingEducator.getProfileImageUrl() != null && !existingEducator.getProfileImageUrl().isEmpty()) {
+                    imageUploadService.deleteFile(existingEducator.getProfileImageUrl());
+                }
+                educatorDto.setProfileImageUrl(null); // Ensure DTO reflects removal
             }
             EducatorDto updatedEducator = adminService.updateEducator(id, educatorDto);
             return ResponseEntity.ok(updatedEducator);
@@ -79,6 +89,7 @@ public class AdminController {
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
 
     @DeleteMapping("/educators/{id}")
     public ResponseEntity<Void> deleteEducator(@PathVariable Long id) {
@@ -99,6 +110,8 @@ public class AdminController {
             }
             StudentDto createdStudent = adminService.createStudent(studentDto);
             return new ResponseEntity<>(createdStudent, HttpStatus.CREATED);
+        } catch (IllegalArgumentException e) {
+            return new ResponseEntity<>(HttpStatus.CONFLICT);
         } catch (Exception e) {
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
         }
@@ -125,13 +138,18 @@ public class AdminController {
             @RequestPart(value = "profileImage", required = false) MultipartFile profileImage) {
         try {
             if (profileImage != null && !profileImage.isEmpty()) {
-                // First, delete old image if it exists
                 StudentDto existingStudent = adminService.getStudentById(id);
-                if (existingStudent.getProfileImageUrl() != null) {
+                if (existingStudent.getProfileImageUrl() != null && !existingStudent.getProfileImageUrl().isEmpty()) {
                     imageUploadService.deleteFile(existingStudent.getProfileImageUrl());
                 }
                 String imageUrl = imageUploadService.uploadFile(profileImage);
                 studentDto.setProfileImageUrl(imageUrl);
+            } else if (studentDto.getProfileImageUrl() == null || studentDto.getProfileImageUrl().isEmpty()) {
+                StudentDto existingStudent = adminService.getStudentById(id);
+                if (existingStudent.getProfileImageUrl() != null && !existingStudent.getProfileImageUrl().isEmpty()) {
+                    imageUploadService.deleteFile(existingStudent.getProfileImageUrl());
+                }
+                studentDto.setProfileImageUrl(null);
             }
             StudentDto updatedStudent = adminService.updateStudent(id, studentDto);
             return ResponseEntity.ok(updatedStudent);
@@ -143,6 +161,52 @@ public class AdminController {
     @DeleteMapping("/students/{id}")
     public ResponseEntity<Void> deleteStudent(@PathVariable Long id) {
         adminService.deleteStudent(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    // --- Class Management (NEW ENDPOINTS) ---
+
+    @PostMapping("/classes")
+    public ResponseEntity<ClassDto> createClass(@Valid @RequestBody ClassDto classDto) {
+        try {
+            ClassDto createdClass = adminService.createClass(classDto);
+            return new ResponseEntity<>(createdClass, HttpStatus.CREATED);
+        } catch (IllegalArgumentException e) {
+            return new ResponseEntity<>(HttpStatus.CONFLICT); // e.g., class code already exists
+        } catch (Exception e) {
+            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @GetMapping("/classes/{id}")
+    public ResponseEntity<ClassDto> getClassById(@PathVariable Long id) {
+        ClassDto classDto = adminService.getClassById(id);
+        return ResponseEntity.ok(classDto);
+    }
+
+    @GetMapping("/classes")
+    public ResponseEntity<Page<ClassDto>> getAllClasses(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        Page<ClassDto> classes = adminService.getAllClasses(page, size);
+        return ResponseEntity.ok(classes);
+    }
+
+    @PutMapping("/classes/{id}")
+    public ResponseEntity<ClassDto> updateClass(@PathVariable Long id, @Valid @RequestBody ClassDto classDto) {
+        try {
+            ClassDto updatedClass = adminService.updateClass(id, classDto);
+            return ResponseEntity.ok(updatedClass);
+        } catch (IllegalArgumentException e) {
+            return new ResponseEntity<>(HttpStatus.CONFLICT);
+        } catch (Exception e) {
+            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @DeleteMapping("/classes/{id}")
+    public ResponseEntity<Void> deleteClass(@PathVariable Long id) {
+        adminService.deleteClass(id);
         return ResponseEntity.noContent().build();
     }
 }

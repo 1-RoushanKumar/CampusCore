@@ -1,17 +1,22 @@
+// Corrected Educator.java
 package com.campus.backend.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.EqualsAndHashCode; // Import EqualsAndHashCode
 
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
 @Table(name = "educators")
+@EqualsAndHashCode(exclude = {"user", "classes"}) // EXCLUDE user (OneToOne) and classes (ManyToMany)
 public class Educator {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -19,7 +24,7 @@ public class Educator {
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", referencedColumnName = "id", nullable = false, unique = true)
-    private User user;
+    private User user; // Exclude this from equals/hashCode
 
     @Column(nullable = false)
     private String firstName;
@@ -36,4 +41,33 @@ public class Educator {
     private LocalDate hireDate;
     private String qualification;
     private Integer experienceYears;
+
+    @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @JoinTable(
+            name = "educator_classes",
+            joinColumns = @JoinColumn(name = "educator_id"),
+            inverseJoinColumns = @JoinColumn(name = "class_id")
+    )
+    private Set<Class> classes = new HashSet<>(); // Exclude this from equals/hashCode
+
+    // Helper methods are fine
+    public void addClass(Class clazz) {
+        if (this.classes == null) {
+            this.classes = new HashSet<>();
+        }
+        this.classes.add(clazz);
+        if (clazz.getEducators() == null) {
+            clazz.setEducators(new HashSet<>());
+        }
+        clazz.getEducators().add(this);
+    }
+
+    public void removeClass(Class clazz) {
+        if (this.classes != null) {
+            this.classes.remove(clazz);
+        }
+        if (clazz.getEducators() != null) {
+            clazz.getEducators().remove(this);
+        }
+    }
 }
