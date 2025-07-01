@@ -3,6 +3,7 @@ package com.campus.backend.controller;
 import com.campus.backend.dtos.ClassDto;
 import com.campus.backend.dtos.FeedbackDto;
 import com.campus.backend.dtos.StudentDto;
+import com.campus.backend.dtos.SubjectDto;
 import com.campus.backend.services.StudentService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -16,7 +17,7 @@ import java.util.List;
 import java.util.Optional; // Import Optional
 
 @RestController
-@RequestMapping("/api/student")
+@RequestMapping("/api/student") // Base path for student-related endpoints
 @PreAuthorize("hasRole('ROLE_STUDENT')") // Only accessible by STUDENT role
 public class StudentController {
 
@@ -32,19 +33,29 @@ public class StudentController {
         return ResponseEntity.ok(profile);
     }
 
-    // --- MODIFIED ENDPOINT ---
-    @GetMapping("/enrolled-class") // Renamed endpoint to reflect singular class
+    @GetMapping("/enrolled-class")
     public ResponseEntity<ClassDto> getMyEnrolledClass(@AuthenticationPrincipal UserDetails userDetails) {
-        Optional<ClassDto> classDto = studentService.getEnrolledClass(userDetails); // Call the new method
-        // Handle the Optional: if present, return OK; otherwise, return 404 Not Found or 204 No Content
+        Optional<ClassDto> classDto = studentService.getEnrolledClass(userDetails);
         return classDto.map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build()); // Or .orElse(ResponseEntity.noContent().build());
+                .orElse(ResponseEntity.notFound().build());
     }
-    // --- END MODIFIED ENDPOINT ---
 
     @GetMapping("/feedback")
     public ResponseEntity<List<FeedbackDto>> getMyFeedback(@AuthenticationPrincipal UserDetails userDetails) {
         List<FeedbackDto> feedback = studentService.getFeedbackForStudent(userDetails);
         return ResponseEntity.ok(feedback);
+    }
+
+    // Corrected endpoint paths: removed redundant "/student"
+    @GetMapping("/subjects/all") // Corrected path to resolve to /api/student/subjects/all
+    public ResponseEntity<List<SubjectDto>> getAllSubjectsForStudent() {
+        List<SubjectDto> subjects = studentService.getAllSubjectsForStudent();
+        return ResponseEntity.ok(subjects);
+    }
+
+    @GetMapping("/classes/all") // Corrected path to resolve to /api/student/classes/all
+    public ResponseEntity<List<ClassDto>> getAllClassesForStudent() {
+        List<ClassDto> classes = studentService.getAllClassesForStudent();
+        return ResponseEntity.ok(classes);
     }
 }

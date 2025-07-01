@@ -1,5 +1,5 @@
 // src/components/admin/StudentManagement.jsx
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import api from "../../services/api"; // Your Axios instance
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -7,6 +7,7 @@ import {
   faTrash,
   faPlus,
   faEye,
+  faEraser, // Added for "Clear Image"
 } from "@fortawesome/free-solid-svg-icons";
 import Modal from "../common/Modal"; // A simple Modal component (create this if you don't have one)
 
@@ -38,13 +39,39 @@ const StudentManagement = () => {
     grade: "",
     classId: "", // For single class assignment
     subjectIds: [], // For multiple subjects
+    enrollmentDate: "", // Added enrollmentDate here for the form
   });
   const [profileImage, setProfileImage] = useState(null); // File object for upload
   const [profileImageUrlPreview, setProfileImageUrlPreview] = useState(""); // For displaying current/new image
+  const [clearProfileImage, setClearProfileImage] = useState(false); // New state to explicitly clear image
 
   // State for View Details Modal
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [studentDetails, setStudentDetails] = useState(null);
+
+  // Helper to get class name from ID
+  const getClassName = useCallback(
+    (classId) => {
+      const clazz = allClasses.find((c) => c.id === classId);
+      return clazz ? `${clazz.className} (${clazz.classCode})` : "N/A";
+    },
+    [allClasses]
+  );
+
+  // Helper to get subject names from IDs
+  const getSubjectNames = useCallback(
+    (subjectIds) => {
+      if (!subjectIds || subjectIds.length === 0) return "N/A";
+      return subjectIds
+        .map((id) => {
+          const subject = allSubjects.find((s) => s.id === id);
+          return subject ? subject.subjectName : null;
+        })
+        .filter(Boolean) // Remove nulls
+        .join(", ");
+    },
+    [allSubjects]
+  );
 
   // --- Fetch Students ---
   const fetchStudents = async (currentPage = page) => {
@@ -95,7 +122,21 @@ const StudentManagement = () => {
     setProfileImage(file);
     if (file) {
       setProfileImageUrlPreview(URL.createObjectURL(file));
+      setClearProfileImage(false); // If new image selected, don't clear
     } else {
+      // If file input is cleared manually (e.g., by browser's 'x' button)
+      setProfileImageUrlPreview(currentStudent?.profileImageUrl || "");
+      // Do not reset clearProfileImage here, user might still want to clear it.
+    }
+  };
+
+  const handleClearImageCheckboxChange = (e) => {
+    setClearProfileImage(e.target.checked);
+    if (e.target.checked) {
+      setProfileImage(null); // Clear file input if checkbox is checked
+      setProfileImageUrlPreview(""); // Clear preview
+    } else {
+      // If unchecking, restore original preview if in edit mode
       setProfileImageUrlPreview(currentStudent?.profileImageUrl || "");
     }
   };
@@ -128,9 +169,11 @@ const StudentManagement = () => {
       grade: "",
       classId: "",
       subjectIds: [],
+      enrollmentDate: new Date().toISOString().split("T")[0], // Automatically set current date
     });
     setProfileImage(null);
     setProfileImageUrlPreview("");
+    setClearProfileImage(false); // Reset clear image state
     setIsModalOpen(true);
   };
 
@@ -149,9 +192,11 @@ const StudentManagement = () => {
       grade: student.grade || "",
       classId: student.classId || "",
       subjectIds: student.subjectIds || [],
+      enrollmentDate: student.enrollmentDate || "", // Keep existing enrollment date
     });
     setProfileImage(null); // Clear file input
     setProfileImageUrlPreview(student.profileImageUrl || ""); // Show existing image
+    setClearProfileImage(false); // Reset clear image state
     setIsModalOpen(true);
   };
 
@@ -181,8 +226,7 @@ const StudentManagement = () => {
     // Create FormData for multipart request
     const formDataToSend = new FormData();
 
-    // Append the student DTO as a JSON blob
-    // Exclude password for updates if it's empty
+    // Prepare student DTO
     const studentDto = { ...formData };
     if (!isCreating) {
       delete studentDto.password; // Don't send empty password on update
@@ -196,19 +240,34 @@ const StudentManagement = () => {
       studentDto.subjectIds = [];
     }
 
+    // Handle profile image logic for DTO
+    if (clearProfileImage) {
+      // If user explicitly wants to clear image, set URL to null in DTO
+      studentDto.profileImageUrl = null;
+    } else if (
+      !profileImage &&
+      currentStudent &&
+      currentStudent.profileImageUrl
+    ) {
+      // If no new image selected AND not clearing AND there was an existing image,
+      // retain the existing image URL in the DTO.
+      studentDto.profileImageUrl = currentStudent.profileImageUrl;
+    } else if (!profileImage && !currentStudent) {
+      // If creating and no image selected, ensure it's null
+      studentDto.profileImageUrl = null;
+    }
+    // If profileImage is set (new file selected), it will be handled by MultipartFile on backend
+    // and the profileImageUrl in DTO will be ignored or overwritten by the backend.
+
     formDataToSend.append(
       "student",
       new Blob([JSON.stringify(studentDto)], { type: "application/json" })
     );
 
-    // Append profile image if selected
+    // Append profile image file if selected
     if (profileImage) {
       formDataToSend.append("profileImage", profileImage);
     }
-    // If no new image is selected and there was an existing one, don't touch the profileImage part.
-    // If the user explicitly cleared the image, you might need a separate mechanism.
-    // For now, if profileImage is null and profileImageUrlPreview is empty, it means no change.
-    // If profileImage is null but profileImageUrlPreview exists, it means no new upload, keep existing.
 
     try {
       if (isCreating) {
@@ -261,30 +320,36 @@ const StudentManagement = () => {
   };
 
   if (loading && students.length === 0) {
-    return <div className="text-center py-8">Loading students...</div>;
+    return (
+      <div className="text-center py-8 text-blue-600 text-xl">
+        Loading students...
+      </div>
+    );
   }
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-md">
+    <div className="bg-white p-6 rounded-lg shadow-md border border-blue-200">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-3xl font-bold text-gray-800">Manage Students</h2>
         <button
           onClick={handleAddStudent}
-          className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded flex items-center"
+          className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full flex items-center shadow-md transition duration-200 transform hover:scale-105"
         >
           <FontAwesomeIcon icon={faPlus} className="mr-2" /> Add New Student
         </button>
       </div>
 
-      {error && <p className="text-red-500 text-center mb-4">{error}</p>}
+      {error && (
+        <p className="text-red-600 text-center mb-4 font-semibold">{error}</p>
+      )}
 
       {students.length === 0 && !loading ? (
-        <p className="text-center text-gray-600">No students found.</p>
+        <p className="text-center text-gray-600 py-4">No students found.</p>
       ) : (
         <div className="overflow-x-auto">
-          <table className="min-w-full bg-white border border-gray-200">
+          <table className="min-w-full bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm">
             <thead>
-              <tr className="bg-gray-100 border-b">
+              <tr className="bg-gray-100 border-b border-gray-200">
                 <th className="py-3 px-6 text-left text-sm font-medium text-gray-600 uppercase tracking-wider">
                   Image
                 </th>
@@ -298,8 +363,13 @@ const StudentManagement = () => {
                   Email
                 </th>
                 <th className="py-3 px-6 text-left text-sm font-medium text-gray-600 uppercase tracking-wider">
-                  Grade
-                </th>
+                  Class
+                </th>{" "}
+                {/* Changed from Grade */}
+                <th className="py-3 px-6 text-left text-sm font-medium text-gray-600 uppercase tracking-wider">
+                  Subjects
+                </th>{" "}
+                {/* Added Subjects */}
                 <th className="py-3 px-6 text-left text-sm font-medium text-gray-600 uppercase tracking-wider">
                   Actions
                 </th>
@@ -307,51 +377,59 @@ const StudentManagement = () => {
             </thead>
             <tbody className="divide-y divide-gray-200">
               {students.map((student) => (
-                <tr key={student.id}>
+                <tr
+                  key={student.id}
+                  className="hover:bg-gray-50 transition-colors duration-150"
+                >
                   <td className="py-4 px-6 whitespace-nowrap">
                     {student.profileImageUrl ? (
                       <img
                         src={`${api.defaults.baseURL}${student.profileImageUrl}`}
                         alt="Profile"
-                        className="w-10 h-10 rounded-full object-cover"
+                        className="w-10 h-10 rounded-full object-cover border border-gray-300"
                       />
                     ) : (
-                      <div className="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center text-gray-600">
+                      <div className="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center text-gray-600 text-sm">
                         N/A
                       </div>
                     )}
                   </td>
-                  <td className="py-4 px-6 whitespace-nowrap">
+                  <td className="py-4 px-6 whitespace-nowrap text-gray-800">
                     {student.username}
                   </td>
-                  <td className="py-4 px-6 whitespace-nowrap">{`${student.firstName} ${student.lastName}`}</td>
-                  <td className="py-4 px-6 whitespace-nowrap">
+                  <td className="py-4 px-6 whitespace-nowrap text-gray-800">{`${student.firstName} ${student.lastName}`}</td>
+                  <td className="py-4 px-6 whitespace-nowrap text-gray-800">
                     {student.email}
                   </td>
-                  <td className="py-4 px-6 whitespace-nowrap">
-                    {student.grade || "N/A"}
-                  </td>
+                  <td className="py-4 px-6 whitespace-nowrap text-gray-800">
+                    {getClassName(student.classId)}
+                  </td>{" "}
+                  {/* Display Class Name */}
+                  <td className="py-4 px-6 whitespace-nowrap text-gray-800">
+                    {getSubjectNames(student.subjectIds)}
+                  </td>{" "}
+                  {/* Display Subject Names */}
                   <td className="py-4 px-6 whitespace-nowrap text-right text-sm font-medium">
                     <button
                       onClick={() => handleViewStudent(student.id)}
-                      className="text-indigo-600 hover:text-indigo-900 mr-3"
+                      className="text-indigo-600 hover:text-indigo-800 mr-3 transition-colors duration-200"
                       title="View Details"
                     >
-                      <FontAwesomeIcon icon={faEye} />
+                      <FontAwesomeIcon icon={faEye} className="text-lg" />
                     </button>
                     <button
                       onClick={() => handleEditStudent(student)}
-                      className="text-blue-600 hover:text-blue-900 mr-3"
+                      className="text-blue-600 hover:text-blue-800 mr-3 transition-colors duration-200"
                       title="Edit"
                     >
-                      <FontAwesomeIcon icon={faEdit} />
+                      <FontAwesomeIcon icon={faEdit} className="text-lg" />
                     </button>
                     <button
                       onClick={() => handleDeleteStudent(student.id)}
-                      className="text-red-600 hover:text-red-900"
+                      className="text-red-600 hover:text-red-800 transition-colors duration-200"
                       title="Delete"
                     >
-                      <FontAwesomeIcon icon={faTrash} />
+                      <FontAwesomeIcon icon={faTrash} className="text-lg" />
                     </button>
                   </td>
                 </tr>
@@ -363,21 +441,21 @@ const StudentManagement = () => {
 
       {/* Pagination Controls */}
       {totalPages > 1 && (
-        <div className="flex justify-center items-center mt-4 space-x-2">
+        <div className="flex justify-center items-center mt-6 space-x-3">
           <button
             onClick={() => handlePageChange(page - 1)}
             disabled={page === 0 || loading}
-            className="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400 disabled:opacity-50"
+            className="px-5 py-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 disabled:opacity-50 transition-colors duration-200 shadow-md"
           >
             Previous
           </button>
-          <span className="text-gray-700">
+          <span className="text-gray-700 font-medium">
             Page {page + 1} of {totalPages}
           </span>
           <button
             onClick={() => handlePageChange(page + 1)}
             disabled={page === totalPages - 1 || loading}
-            className="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400 disabled:opacity-50"
+            className="px-5 py-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 disabled:opacity-50 transition-colors duration-200 shadow-md"
           >
             Next
           </button>
@@ -390,226 +468,247 @@ const StudentManagement = () => {
         onClose={() => setIsModalOpen(false)}
         title={currentStudent ? "Edit Student" : "Add New Student"}
       >
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label
-              htmlFor="username"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Username
-            </label>
-            <input
-              type="text"
-              id="username"
-              name="username"
-              value={formData.username}
-              onChange={handleChange}
-              required
-              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
-            />
-          </div>
-          {!currentStudent && ( // Password field only for new student creation
+        <form onSubmit={handleSubmit} className="space-y-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label
-                htmlFor="password"
+                htmlFor="username"
                 className="block text-sm font-medium text-gray-700"
               >
-                Password
+                Username
               </label>
               <input
-                type="password"
-                id="password"
-                name="password"
-                value={formData.password}
+                type="text"
+                id="username"
+                name="username"
+                value={formData.username}
                 onChange={handleChange}
-                required={!currentStudent}
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                required
+                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2.5 focus:ring-blue-500 focus:border-blue-500"
               />
             </div>
-          )}
-          <div>
-            <label
-              htmlFor="email"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Email
-            </label>
-            <input
-              type="email"
-              id="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              required
-              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
-            />
-          </div>
-          <div>
-            <label
-              htmlFor="firstName"
-              className="block text-sm font-medium text-gray-700"
-            >
-              First Name
-            </label>
-            <input
-              type="text"
-              id="firstName"
-              name="firstName"
-              value={formData.firstName}
-              onChange={handleChange}
-              required
-              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
-            />
-          </div>
-          <div>
-            <label
-              htmlFor="lastName"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Last Name
-            </label>
-            <input
-              type="text"
-              id="lastName"
-              name="lastName"
-              value={formData.lastName}
-              onChange={handleChange}
-              required
-              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
-            />
-          </div>
-          <div>
-            <label
-              htmlFor="dateOfBirth"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Date of Birth
-            </label>
-            <input
-              type="date"
-              id="dateOfBirth"
-              name="dateOfBirth"
-              value={formData.dateOfBirth}
-              onChange={handleChange}
-              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
-            />
-          </div>
-          <div>
-            <label
-              htmlFor="gender"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Gender
-            </label>
-            <select
-              id="gender"
-              name="gender"
-              value={formData.gender}
-              onChange={handleChange}
-              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
-            >
-              <option value="">Select Gender</option>
-              <option value="Male">Male</option>
-              <option value="Female">Female</option>
-              <option value="Other">Other</option>
-            </select>
-          </div>
-          <div>
-            <label
-              htmlFor="phoneNumber"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Phone Number
-            </label>
-            <input
-              type="text"
-              id="phoneNumber"
-              name="phoneNumber"
-              value={formData.phoneNumber}
-              onChange={handleChange}
-              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
-            />
-          </div>
-          <div>
-            <label
-              htmlFor="address"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Address
-            </label>
-            <textarea
-              id="address"
-              name="address"
-              value={formData.address}
-              onChange={handleChange}
-              rows="3"
-              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
-            ></textarea>
-          </div>
-          <div>
-            <label
-              htmlFor="grade"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Grade
-            </label>
-            <input
-              type="text"
-              id="grade"
-              name="grade"
-              value={formData.grade}
-              onChange={handleChange}
-              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
-            />
-          </div>
-          <div>
-            <label
-              htmlFor="classId"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Class
-            </label>
-            <select
-              id="classId"
-              name="classId"
-              value={formData.classId}
-              onChange={handleChange}
-              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
-            >
-              <option value="">Select Class</option>
-              {allClasses.map((clazz) => (
-                <option key={clazz.id} value={clazz.id}>
-                  {clazz.className} ({clazz.classCode})
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label
-              htmlFor="subjectIds"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Subjects (Select multiple)
-            </label>
-            <select
-              multiple={true}
-              id="subjectIds"
-              name="subjectIds"
-              value={formData.subjectIds}
-              onChange={handleSubjectIdsChange}
-              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 h-32"
-            >
-              {allSubjects.map((subject) => (
-                <option key={subject.id} value={subject.id}>
-                  {subject.subjectName}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
+            {!currentStudent && ( // Password field only for new student creation
+              <div>
+                <label
+                  htmlFor="password"
+                  className="block text-sm font-medium text-gray-700"
+                >
+                  Password
+                </label>
+                <input
+                  type="password"
+                  id="password"
+                  name="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  required={!currentStudent}
+                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2.5 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+            )}
+            <div>
+              <label
+                htmlFor="email"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Email
+              </label>
+              <input
+                type="email"
+                id="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                required
+                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2.5 focus:ring-blue-500 focus:border-blue-500"
+              />
+            </div>
+            <div>
+              <label
+                htmlFor="firstName"
+                className="block text-sm font-medium text-gray-700"
+              >
+                First Name
+              </label>
+              <input
+                type="text"
+                id="firstName"
+                name="firstName"
+                value={formData.firstName}
+                onChange={handleChange}
+                required
+                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2.5 focus:ring-blue-500 focus:border-blue-500"
+              />
+            </div>
+            <div>
+              <label
+                htmlFor="lastName"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Last Name
+              </label>
+              <input
+                type="text"
+                id="lastName"
+                name="lastName"
+                value={formData.lastName}
+                onChange={handleChange}
+                required
+                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2.5 focus:ring-blue-500 focus:border-blue-500"
+              />
+            </div>
+            <div>
+              <label
+                htmlFor="dateOfBirth"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Date of Birth
+              </label>
+              <input
+                type="date"
+                id="dateOfBirth"
+                name="dateOfBirth"
+                value={formData.dateOfBirth}
+                onChange={handleChange}
+                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2.5 focus:ring-blue-500 focus:border-blue-500"
+              />
+            </div>
+            <div>
+              <label
+                htmlFor="gender"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Gender
+              </label>
+              <select
+                id="gender"
+                name="gender"
+                value={formData.gender}
+                onChange={handleChange}
+                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2.5 focus:ring-blue-500 focus:border-blue-500"
+              >
+                <option value="">Select Gender</option>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+            <div>
+              <label
+                htmlFor="phoneNumber"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Phone Number
+              </label>
+              <input
+                type="text"
+                id="phoneNumber"
+                name="phoneNumber"
+                value={formData.phoneNumber}
+                onChange={handleChange}
+                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2.5 focus:ring-blue-500 focus:border-blue-500"
+              />
+            </div>
+            <div>
+              <label
+                htmlFor="address"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Address
+              </label>
+              <textarea
+                id="address"
+                name="address"
+                value={formData.address}
+                onChange={handleChange}
+                rows="3"
+                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2.5 focus:ring-blue-500 focus:border-blue-500"
+              ></textarea>
+            </div>
+            <div>
+              <label
+                htmlFor="grade"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Grade
+              </label>
+              <input
+                type="text"
+                id="grade"
+                name="grade"
+                value={formData.grade}
+                onChange={handleChange}
+                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2.5 focus:ring-blue-500 focus:border-blue-500"
+              />
+            </div>
+            <div>
+              <label
+                htmlFor="classId"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Class
+              </label>
+              <select
+                id="classId"
+                name="classId"
+                value={formData.classId}
+                onChange={handleChange}
+                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2.5 focus:ring-blue-500 focus:border-blue-500"
+              >
+                <option value="">Select Class</option>
+                {allClasses.map((clazz) => (
+                  <option key={clazz.id} value={clazz.id}>
+                    {clazz.className} ({clazz.classCode})
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label
+                htmlFor="subjectIds"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Subjects (Select multiple)
+              </label>
+              <select
+                multiple={true}
+                id="subjectIds"
+                name="subjectIds"
+                value={formData.subjectIds}
+                onChange={handleSubjectIdsChange}
+                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2.5 h-32 focus:ring-blue-500 focus:border-blue-500"
+              >
+                {allSubjects.map((subject) => (
+                  <option key={subject.id} value={subject.id}>
+                    {subject.subjectName}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label
+                htmlFor="enrollmentDate"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Enrollment Date
+              </label>
+              <input
+                type="date"
+                id="enrollmentDate"
+                name="enrollmentDate"
+                value={formData.enrollmentDate}
+                onChange={handleChange}
+                required
+                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2.5 focus:ring-blue-500 focus:border-blue-500"
+              />
+            </div>
+          </div>{" "}
+          {/* End of grid */}
+          {/* Profile Image Section */}
+          <div className="border-t pt-4 mt-4">
             <label
               htmlFor="profileImage"
-              className="block text-sm font-medium text-gray-700"
+              className="block text-sm font-medium text-gray-700 mb-2"
             >
               Profile Image
             </label>
@@ -619,7 +718,8 @@ const StudentManagement = () => {
               name="profileImage"
               accept="image/*"
               onChange={handleImageChange}
-              className="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+              className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer"
+              disabled={clearProfileImage} // Disable if clear image is checked
             />
             {profileImageUrlPreview && (
               <img
@@ -629,22 +729,42 @@ const StudentManagement = () => {
                     : `${api.defaults.baseURL}${profileImageUrlPreview}`
                 }
                 alt="Profile Preview"
-                className="mt-2 w-24 h-24 object-cover rounded-full"
+                className="mt-3 w-28 h-28 object-cover rounded-full border-2 border-gray-300 shadow-sm"
               />
             )}
+            {currentStudent && currentStudent.profileImageUrl && (
+              <div className="mt-3 flex items-center">
+                <input
+                  type="checkbox"
+                  id="clearProfileImage"
+                  checked={clearProfileImage}
+                  onChange={handleClearImageCheckboxChange}
+                  className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                />
+                <label
+                  htmlFor="clearProfileImage"
+                  className="ml-2 text-sm text-gray-700 flex items-center"
+                >
+                  <FontAwesomeIcon
+                    icon={faEraser}
+                    className="mr-1 text-red-500"
+                  />{" "}
+                  Clear existing image
+                </label>
+              </div>
+            )}
           </div>
-
           <div className="mt-6 flex justify-end space-x-3">
             <button
               type="button"
               onClick={() => setIsModalOpen(false)}
-              className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+              className="px-5 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-100 transition-colors duration-200"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+              className="px-5 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors duration-200 shadow-md"
               disabled={loading}
             >
               {loading ? "Saving..." : "Save Student"}
@@ -660,13 +780,13 @@ const StudentManagement = () => {
         title="Student Details"
       >
         {studentDetails ? (
-          <div className="space-y-4 text-gray-700">
+          <div className="space-y-4 text-gray-700 text-base">
             {studentDetails.profileImageUrl && (
               <div className="flex justify-center mb-4">
                 <img
                   src={`${api.defaults.baseURL}${studentDetails.profileImageUrl}`}
                   alt="Profile"
-                  className="w-32 h-32 rounded-full object-cover border-2 border-blue-300"
+                  className="w-32 h-32 rounded-full object-cover border-2 border-blue-300 shadow-md"
                 />
               </div>
             )}
@@ -684,34 +804,34 @@ const StudentManagement = () => {
               <strong>Email:</strong> {studentDetails.email}
             </p>
             <p>
-              <strong>Date of Birth:</strong> {studentDetails.dateOfBirth}
+              <strong>Date of Birth:</strong>{" "}
+              {studentDetails.dateOfBirth || "N/A"}
             </p>
             <p>
-              <strong>Gender:</strong> {studentDetails.gender}
+              <strong>Gender:</strong> {studentDetails.gender || "N/A"}
             </p>
             <p>
-              <strong>Phone:</strong> {studentDetails.phoneNumber}
+              <strong>Phone:</strong> {studentDetails.phoneNumber || "N/A"}
             </p>
             <p>
-              <strong>Address:</strong> {studentDetails.address}
+              <strong>Address:</strong> {studentDetails.address || "N/A"}
             </p>
             <p>
-              <strong>Enrollment Date:</strong> {studentDetails.enrollmentDate}
+              <strong>Enrollment Date:</strong>{" "}
+              {studentDetails.enrollmentDate || "N/A"}
             </p>
             <p>
-              <strong>Grade:</strong> {studentDetails.grade}
+              <strong>Grade:</strong> {studentDetails.grade || "N/A"}
             </p>
             <p>
               <strong>Role:</strong> {studentDetails.role}
             </p>
             <p>
-              <strong>Class ID:</strong> {studentDetails.classId || "N/A"}
+              <strong>Class:</strong> {getClassName(studentDetails.classId)}
             </p>
             <p>
-              <strong>Subject IDs:</strong>{" "}
-              {studentDetails.subjectIds && studentDetails.subjectIds.length > 0
-                ? studentDetails.subjectIds.join(", ")
-                : "N/A"}
+              <strong>Subjects:</strong>{" "}
+              {getSubjectNames(studentDetails.subjectIds)}
             </p>
           </div>
         ) : (

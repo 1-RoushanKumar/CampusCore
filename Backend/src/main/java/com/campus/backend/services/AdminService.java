@@ -752,4 +752,22 @@ public class AdminService {
                 .collect(Collectors.toList()));
         return dto;
     }
+
+    // --- Dashboard Count Methods ---
+    public long getStudentsCount() {
+        return studentRepository.count();
+    }
+
+    public long getEducatorsCount() {
+        return educatorRepository.count();
+    }
+
+    public long getSubjectsCount() {
+        return subjectRepository.count();
+    }
+
+    public long getClassesCount() {
+        return classRepository.count();
+    }
+
 }

@@ -11,10 +11,7 @@ import com.campus.backend.entity.Class; // Ensure this is imported correctly
 import com.campus.backend.entity.Subject; // Import Subject
 import com.campus.backend.entity.Educator; // Import Educator for SubjectDto.EducatorInfo
 import com.campus.backend.exceptions.ResourceNotFoundException;
-import com.campus.backend.repositories.FeedbackRepository;
-import com.campus.backend.repositories.StudentRepository;
-import com.campus.backend.repositories.UserRepository;
-import com.campus.backend.repositories.SubjectRepository; // Import SubjectRepository
+import com.campus.backend.repositories.*;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
@@ -31,13 +28,15 @@ public class StudentService {
     private final UserRepository userRepository;
     private final FeedbackRepository feedbackRepository;
     private final SubjectRepository subjectRepository;
+    private final ClassRepository classRepository;
 
     public StudentService(StudentRepository studentRepository, UserRepository userRepository,
-                          FeedbackRepository feedbackRepository, SubjectRepository subjectRepository) {
+                          FeedbackRepository feedbackRepository, SubjectRepository subjectRepository, ClassRepository classRepository) {
         this.studentRepository = studentRepository;
         this.userRepository = userRepository;
         this.feedbackRepository = feedbackRepository;
         this.subjectRepository = subjectRepository;
+        this.classRepository = classRepository;
     }
 
     public StudentDto getStudentProfile(UserDetails userDetails) {
@@ -198,5 +197,18 @@ public class StudentService {
                 .map(Student::getId)
                 .collect(Collectors.toList()));
         return dto;
+    }
+
+    // --- New methods for Student/Educator accessible lists ---
+    public List<ClassDto> getAllClassesForStudent() {
+        return classRepository.findAll().stream()
+                .map(this::convertToClassDto)
+                .collect(Collectors.toList());
+    }
+
+    public List<SubjectDto> getAllSubjectsForStudent() {
+        return subjectRepository.findAll().stream()
+                .map(this::convertToSubjectDto)
+                .collect(Collectors.toList());
     }
 }

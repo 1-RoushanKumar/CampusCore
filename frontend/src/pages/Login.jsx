@@ -2,23 +2,27 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faUser, faLock } from '@fortawesome/free-solid-svg-icons';
 
 const Login = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false); // Added loading state
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(''); // Clear previous errors
+    setLoading(true); // Set loading to true
 
     try {
       const response = await api.post('/auth/login', { username, password });
-      const { jwtToken, role } = response.data; // Destructure role from the response
+      const { jwtToken, role } = response.data;
 
       localStorage.setItem('jwtToken', jwtToken);
-      localStorage.setItem('userRole', role); // Store the user's role
+      localStorage.setItem('userRole', role);
 
       console.log('Login successful:', response.data);
 
@@ -34,8 +38,7 @@ const Login = () => {
           navigate('/student/dashboard');
           break;
         default:
-          // Fallback if role is not recognized or not provided
-          navigate('/dashboard');
+          navigate('/dashboard'); // Fallback
           break;
       }
     } catch (err) {
@@ -47,47 +50,52 @@ const Login = () => {
         setError('An unexpected error occurred. Please try again.');
       }
       console.error('Login error:', err);
+    } finally {
+      setLoading(false); // Set loading to false regardless of success or failure
     }
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100">
-      <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-sm">
-        <h2 className="text-2xl font-bold mb-6 text-center">Login</h2>
-        <form onSubmit={handleSubmit}>
-          <div className="mb-4">
-            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="username">
-              Username
+    <div className="flex items-center justify-center min-h-[calc(100vh-80px)] bg-gradient-to-br from-blue-50 to-indigo-100 px-4 py-8">
+      <div className="bg-white p-8 rounded-xl shadow-2xl w-full max-w-sm border border-blue-200 transform transition-all duration-300 hover:scale-[1.01]">
+        <h2 className="text-3xl font-extrabold mb-8 text-center text-gray-800">Login to Campus App</h2>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div>
+            <label className="block text-gray-700 text-sm font-semibold mb-2" htmlFor="username">
+              <FontAwesomeIcon icon={faUser} className="mr-2 text-blue-500" /> Username
             </label>
             <input
               type="text"
               id="username"
-              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+              className="shadow-sm appearance-none border border-gray-300 rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               required
+              placeholder="Enter your username"
             />
           </div>
-          <div className="mb-6">
-            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="password">
-              Password
+          <div>
+            <label className="block text-gray-700 text-sm font-semibold mb-2" htmlFor="password">
+              <FontAwesomeIcon icon={faLock} className="mr-2 text-blue-500" /> Password
             </label>
             <input
               type="password"
               id="password"
-              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline"
+              className="shadow-sm appearance-none border border-gray-300 rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
+              placeholder="Enter your password"
             />
           </div>
-          {error && <p className="text-red-500 text-xs italic mb-4">{error}</p>}
-          <div className="flex items-center justify-between">
+          {error && <p className="text-red-600 text-sm font-medium text-center">{error}</p>}
+          <div className="flex items-center justify-center">
             <button
               type="submit"
-              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+              className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-full focus:outline-none focus:shadow-outline-blue transition duration-300 ease-in-out transform hover:scale-105 shadow-md"
+              disabled={loading}
             >
-              Sign In
+              {loading ? 'Logging In...' : 'Sign In'}
             </button>
           </div>
         </form>

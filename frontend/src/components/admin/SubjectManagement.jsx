@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+// src/components/admin/SubjectManagement.jsx
+import React, { useState, useEffect, useCallback } from "react";
 import api from "../../services/api"; // Your Axios instance
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -34,6 +35,30 @@ const SubjectManagement = () => {
   // State for View Details Modal
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [subjectDetails, setSubjectDetails] = useState(null);
+
+  // Helper to get educator names from IDs
+  const getEducatorNames = useCallback((educatorIds) => {
+    if (!educatorIds || educatorIds.length === 0) return "N/A";
+    return educatorIds
+      .map((id) => {
+        const educator = allEducators.find((e) => e.id === id);
+        return educator ? `${educator.firstName} ${educator.lastName}` : null;
+      })
+      .filter(Boolean) // Remove nulls
+      .join(", ");
+  }, [allEducators]);
+
+  // Helper to get student names from IDs
+  const getStudentNames = useCallback((studentIds) => {
+    if (!studentIds || studentIds.length === 0) return "N/A";
+    return studentIds
+      .map((id) => {
+        const student = allStudents.find((s) => s.id === id);
+        return student ? `${student.firstName} ${student.lastName}` : null;
+      })
+      .filter(Boolean) // Remove nulls
+      .join(", ");
+  }, [allStudents]);
 
   // --- Fetch Subjects ---
   const fetchSubjects = async (currentPage = page) => {
@@ -204,71 +229,65 @@ const SubjectManagement = () => {
   };
 
   if (loading && subjects.length === 0) {
-    return <div className="text-center py-8">Loading subjects...</div>;
+    return <div className="text-center py-8 text-blue-600 text-xl">Loading subjects...</div>;
   }
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-md">
+    <div className="bg-white p-6 rounded-lg shadow-md border border-blue-200">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-3xl font-bold text-gray-800">Manage Subjects</h2>
         <button
           onClick={handleAddSubject}
-          className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded flex items-center"
+          className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full flex items-center shadow-md transition duration-200 transform hover:scale-105"
         >
           <FontAwesomeIcon icon={faPlus} className="mr-2" /> Add New Subject
         </button>
       </div>
 
-      {error && <p className="text-red-500 text-center mb-4">{error}</p>}
+      {error && <p className="text-red-600 text-center mb-4 font-semibold">{error}</p>}
 
       {subjects.length === 0 && !loading ? (
-        <p className="text-center text-gray-600">No subjects found.</p>
+        <p className="text-center text-gray-600 py-4">No subjects found.</p>
       ) : (
         <div className="overflow-x-auto">
-          <table className="min-w-full bg-white border border-gray-200">
+          <table className="min-w-full bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm">
             <thead>
-              <tr className="bg-gray-100 border-b">
-                <th className="py-3 px-6 text-left text-sm font-medium text-gray-600 uppercase tracking-wider">
-                  Subject Name
-                </th>
-                <th className="py-3 px-6 text-left text-sm font-medium text-gray-600 uppercase tracking-wider">
-                  Description
-                </th>
-                <th className="py-3 px-6 text-left text-sm font-medium text-gray-600 uppercase tracking-wider">
-                  Actions
-                </th>
+              <tr className="bg-gray-100 border-b border-gray-200">
+                <th className="py-3 px-6 text-left text-sm font-medium text-gray-600 uppercase tracking-wider">Subject Name</th>
+                <th className="py-3 px-6 text-left text-sm font-medium text-gray-600 uppercase tracking-wider">Description</th>
+                <th className="py-3 px-6 text-left text-sm font-medium text-gray-600 uppercase tracking-wider">Educators</th>
+                <th className="py-3 px-6 text-left text-sm font-medium text-gray-600 uppercase tracking-wider">Students</th>
+                <th className="py-3 px-6 text-left text-sm font-medium text-gray-600 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
               {subjects.map((subject) => (
-                <tr key={subject.id}>
-                  <td className="py-4 px-6 whitespace-nowrap">
-                    {subject.subjectName}
-                  </td>
-                  <td className="py-4 px-6 whitespace-nowrap">
-                    {subject.description || "N/A"}
-                  </td>
+                <tr key={subject.id} className="hover:bg-gray-50 transition-colors duration-150">
+                  <td className="py-4 px-6 whitespace-nowrap text-gray-800">{subject.subjectName}</td>
+                  <td className="py-4 px-6 whitespace-nowrap text-gray-800">{subject.description || "N/A"}</td>
+                  <td className="py-4 px-6 text-gray-800">{getEducatorNames(subject.educatorIds)}</td>
+                  <td className="py-4 px-6 text-gray-800">{getStudentNames(subject.studentIds)}</td>
                   <td className="py-4 px-6 whitespace-nowrap text-right text-sm font-medium">
                     <button
                       onClick={() => handleViewSubject(subject.id)}
-                      className="text-indigo-600 hover:text-indigo-900 mr-3"
+                      className="text-indigo-600 hover:text-indigo-800 mr-3 transition-colors duration-200"
                       title="View Details"
                     >
-                      <FontAwesomeIcon icon={faEye} />
+                      <FontAwesomeIcon icon={faEye} className="text-lg" />
                     </button>
                     <button
                       onClick={() => handleEditSubject(subject)}
-                      className="text-blue-600 hover:text-blue-900 mr-3"
+                      className="text-blue-600 hover:text-blue-800 mr-3 transition-colors duration-200"
                       title="Edit"
                     >
-                      <FontAwesomeIcon icon={faEdit} />
+                      <FontAwesomeIcon icon={faEdit} className="text-lg" />
                     </button>
                     <button
                       onClick={() => handleDeleteSubject(subject.id)}
-                      className="text-red-600 hover:text-red-900"
+                      className="text-red-600 hover:text-red-800 transition-colors duration-200"
                       title="Delete"
                     >
-                      <FontAwesomeIcon icon={faTrash} />
+                      <FontAwesomeIcon icon={faTrash} className="text-lg" />
                     </button>
                   </td>
                 </tr>
@@ -280,21 +299,21 @@ const SubjectManagement = () => {
 
       {/* Pagination Controls */}
       {totalPages > 1 && (
-        <div className="flex justify-center items-center mt-4 space-x-2">
+        <div className="flex justify-center items-center mt-6 space-x-3">
           <button
             onClick={() => handlePageChange(page - 1)}
             disabled={page === 0 || loading}
-            className="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400 disabled:opacity-50"
+            className="px-5 py-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 disabled:opacity-50 transition-colors duration-200 shadow-md"
           >
             Previous
           </button>
-          <span className="text-gray-700">
+          <span className="text-gray-700 font-medium">
             Page {page + 1} of {totalPages}
           </span>
           <button
             onClick={() => handlePageChange(page + 1)}
             disabled={page === totalPages - 1 || loading}
-            className="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400 disabled:opacity-50"
+            className="px-5 py-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 disabled:opacity-50 transition-colors duration-200 shadow-md"
           >
             Next
           </button>
@@ -307,7 +326,7 @@ const SubjectManagement = () => {
         onClose={() => setIsModalOpen(false)}
         title={currentSubject ? "Edit Subject" : "Add New Subject"}
       >
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-5">
           <div>
             <label
               htmlFor="subjectName"
@@ -322,7 +341,7 @@ const SubjectManagement = () => {
               value={formData.subjectName}
               onChange={handleChange}
               required
-              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2.5 focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
           <div>
@@ -338,7 +357,7 @@ const SubjectManagement = () => {
               value={formData.description}
               onChange={handleChange}
               rows="3"
-              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2.5 focus:ring-blue-500 focus:border-blue-500"
             ></textarea>
           </div>
           <div>
@@ -354,7 +373,7 @@ const SubjectManagement = () => {
               name="educatorIds"
               value={formData.educatorIds}
               onChange={handleEducatorIdsChange}
-              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 h-32"
+              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2.5 h-32 focus:ring-blue-500 focus:border-blue-500"
             >
               {allEducators.map((educator) => (
                 <option key={educator.id} value={educator.id}>
@@ -376,7 +395,7 @@ const SubjectManagement = () => {
               name="studentIds"
               value={formData.studentIds}
               onChange={handleStudentIdsChange}
-              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 h-32"
+              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2.5 h-32 focus:ring-blue-500 focus:border-blue-500"
             >
               {allStudents.map((student) => (
                 <option key={student.id} value={student.id}>
@@ -390,13 +409,13 @@ const SubjectManagement = () => {
             <button
               type="button"
               onClick={() => setIsModalOpen(false)}
-              className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+              className="px-5 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-100 transition-colors duration-200"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+              className="px-5 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors duration-200 shadow-md"
               disabled={loading}
             >
               {loading ? "Saving..." : "Save Subject"}
@@ -412,7 +431,7 @@ const SubjectManagement = () => {
         title="Subject Details"
       >
         {subjectDetails ? (
-          <div className="space-y-4 text-gray-700">
+          <div className="space-y-4 text-gray-700 text-base">
             <p>
               <strong>ID:</strong> {subjectDetails.id}
             </p>
@@ -423,9 +442,9 @@ const SubjectManagement = () => {
               <strong>Description:</strong>{" "}
               {subjectDetails.description || "N/A"}
             </p>
-            <h4 className="font-semibold mt-4">Assigned Educators:</h4>
+            <h4 className="font-semibold mt-4 text-gray-800">Assigned Educators:</h4>
             {subjectDetails.educators && subjectDetails.educators.length > 0 ? (
-              <ul className="list-disc list-inside">
+              <ul className="list-disc list-inside ml-4">
                 {subjectDetails.educators.map((educator) => (
                   <li key={educator.id}>
                     {educator.firstName} {educator.lastName} ({educator.email})
@@ -433,11 +452,11 @@ const SubjectManagement = () => {
                 ))}
               </ul>
             ) : (
-              <p>No educators assigned.</p>
+              <p className="ml-4 text-gray-600">No educators assigned.</p>
             )}
-            <h4 className="font-semibold mt-4">Enrolled Students:</h4>
+            <h4 className="font-semibold mt-4 text-gray-800">Enrolled Students:</h4>
             {subjectDetails.students && subjectDetails.students.length > 0 ? (
-              <ul className="list-disc list-inside">
+              <ul className="list-disc list-inside ml-4">
                 {subjectDetails.students.map((student) => (
                   <li key={student.id}>
                     {student.firstName} {student.lastName} ({student.email})
@@ -445,7 +464,7 @@ const SubjectManagement = () => {
                 ))}
               </ul>
             ) : (
-              <p>No students enrolled.</p>
+              <p className="ml-4 text-gray-600">No students enrolled.</p>
             )}
           </div>
         ) : (

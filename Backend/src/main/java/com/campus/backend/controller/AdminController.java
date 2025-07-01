@@ -15,6 +15,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/admin")
 @PreAuthorize("hasRole('ROLE_ADMIN')") // Only accessible by ADMIN role
@@ -75,13 +77,15 @@ public class AdminController {
                 }
                 String imageUrl = imageUploadService.uploadFile(profileImage);
                 educatorDto.setProfileImageUrl(imageUrl);
-            } else if (educatorDto.getProfileImageUrl() == null || educatorDto.getProfileImageUrl().isEmpty()) {
+            } else if (educatorDto.getProfileImageUrl() == null) { // Changed condition to explicitly check for null
                 EducatorDto existingEducator = adminService.getEducatorById(id);
                 if (existingEducator.getProfileImageUrl() != null && !existingEducator.getProfileImageUrl().isEmpty()) {
                     imageUploadService.deleteFile(existingEducator.getProfileImageUrl());
                 }
                 educatorDto.setProfileImageUrl(null);
             }
+            // If profileImage is null and educatorDto.getProfileImageUrl() is not null,
+            // it means the client wants to keep the existing image. No action needed here.
             EducatorDto updatedEducator = adminService.updateEducator(id, educatorDto);
             return ResponseEntity.ok(updatedEducator);
         } catch (Exception e) {
@@ -142,13 +146,15 @@ public class AdminController {
                 }
                 String imageUrl = imageUploadService.uploadFile(profileImage);
                 studentDto.setProfileImageUrl(imageUrl);
-            } else if (studentDto.getProfileImageUrl() == null || studentDto.getProfileImageUrl().isEmpty()) {
+            } else if (studentDto.getProfileImageUrl() == null) { // Changed condition to explicitly check for null
                 StudentDto existingStudent = adminService.getStudentById(id);
                 if (existingStudent.getProfileImageUrl() != null && !existingStudent.getProfileImageUrl().isEmpty()) {
                     imageUploadService.deleteFile(existingStudent.getProfileImageUrl());
                 }
                 studentDto.setProfileImageUrl(null);
             }
+            // If profileImage is null and studentDto.getProfileImageUrl() is not null,
+            // it means the client wants to keep the existing image. No action needed here.
             StudentDto updatedStudent = adminService.updateStudent(id, studentDto);
             return ResponseEntity.ok(updatedStudent);
         } catch (Exception e) {
@@ -253,5 +259,30 @@ public class AdminController {
     public ResponseEntity<Void> deleteSubject(@PathVariable Long id) {
         adminService.deleteSubject(id);
         return ResponseEntity.noContent().build();
+    }
+
+    // --- Dashboard Count Endpoints ---
+    @GetMapping("/students/count")
+    public ResponseEntity<Long> getStudentsCount() {
+        long count = adminService.getStudentsCount();
+        return ResponseEntity.ok(count);
+    }
+
+    @GetMapping("/educators/count")
+    public ResponseEntity<Long> getEducatorsCount() {
+        long count = adminService.getEducatorsCount();
+        return ResponseEntity.ok(count);
+    }
+
+    @GetMapping("/subjects/count")
+    public ResponseEntity<Long> getSubjectsCount() {
+        long count = adminService.getSubjectsCount();
+        return ResponseEntity.ok(count);
+    }
+
+    @GetMapping("/classes/count")
+    public ResponseEntity<Long> getClassesCount() {
+        long count = adminService.getClassesCount();
+        return ResponseEntity.ok(count);
     }
 }
