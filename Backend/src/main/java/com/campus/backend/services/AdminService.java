@@ -3,15 +3,18 @@ package com.campus.backend.services;
 import com.campus.backend.dtos.ClassDto;
 import com.campus.backend.dtos.EducatorDto;
 import com.campus.backend.dtos.StudentDto;
-import com.campus.backend.entity.Class; // Import Class
+import com.campus.backend.dtos.SubjectDto; // Import SubjectDto
+import com.campus.backend.entity.Class;
 import com.campus.backend.entity.Educator;
 import com.campus.backend.entity.Student;
+import com.campus.backend.entity.Subject; // Import Subject
 import com.campus.backend.entity.User;
 import com.campus.backend.entity.enums.Role;
 import com.campus.backend.exceptions.ResourceNotFoundException;
-import com.campus.backend.repositories.ClassRepository; // New import
+import com.campus.backend.repositories.ClassRepository;
 import com.campus.backend.repositories.EducatorRepository;
 import com.campus.backend.repositories.StudentRepository;
+import com.campus.backend.repositories.SubjectRepository; // Import SubjectRepository
 import com.campus.backend.repositories.UserRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -33,22 +36,26 @@ public class AdminService {
     private final UserRepository userRepository;
     private final EducatorRepository educatorRepository;
     private final StudentRepository studentRepository;
+    private final SubjectRepository subjectRepository;
     private final PasswordEncoder passwordEncoder;
     private final ImageUploadService imageUploadService;
     private final ClassRepository classRepository;
 
     public AdminService(UserRepository userRepository, EducatorRepository educatorRepository,
-                        StudentRepository studentRepository, PasswordEncoder passwordEncoder,
-                        ImageUploadService imageUploadService, ClassRepository classRepository) {
+                        StudentRepository studentRepository, SubjectRepository subjectRepository,
+                        PasswordEncoder passwordEncoder, ImageUploadService imageUploadService,
+                        ClassRepository classRepository) {
         this.userRepository = userRepository;
         this.educatorRepository = educatorRepository;
         this.studentRepository = studentRepository;
+        this.subjectRepository = subjectRepository;
         this.passwordEncoder = passwordEncoder;
         this.imageUploadService = imageUploadService;
         this.classRepository = classRepository;
     }
 
-    // --- Educator Management (no changes needed for this specific error) ---
+    // --- Educator Management ---
+
     @Transactional
     public EducatorDto createEducator(EducatorDto educatorDto) {
         if (userRepository.existsByUsername(educatorDto.getUsername())) {
@@ -81,13 +88,23 @@ public class AdminService {
             educator.setProfileImageUrl(educatorDto.getProfileImageUrl());
         }
 
-        // Handle class associations for new educator
         if (educatorDto.getClassIds() != null && !educatorDto.getClassIds().isEmpty()) {
             Set<Class> classes = new HashSet<>(classRepository.findAllById(educatorDto.getClassIds()));
             if (classes.size() != educatorDto.getClassIds().size()) {
                 throw new ResourceNotFoundException("One or more classes not found.");
             }
-            classes.forEach(educator::addClass); // Use helper method to maintain bidirectional relationship
+            classes.forEach(educator::addClass);
+        }
+
+        // --- NEW LOGIC for Many-to-One Subject relationship for Educator ---
+        if (educatorDto.getSubjectId() != null) {
+            Subject subject = subjectRepository.findById(educatorDto.getSubjectId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Subject not found with id: " + educatorDto.getSubjectId()));
+
+            // Assign subject to educator (ManyToOne side)
+            educator.setSubject(subject);
+            // Add educator to subject's collection (OneToMany side)
+            subject.getEducators().add(educator); // Ensure bidirectional link
         }
 
         Educator savedEducator = educatorRepository.save(educator);
@@ -136,7 +153,6 @@ public class AdminService {
             existingEducator.setProfileImageUrl(educatorDto.getProfileImageUrl());
         }
 
-        // Handle class associations for existing educator
         if (educatorDto.getClassIds() != null) {
             Set<Class> newClasses = new HashSet<>(classRepository.findAllById(educatorDto.getClassIds()));
             if (newClasses.size() != educatorDto.getClassIds().size()) {
@@ -144,7 +160,13 @@ public class AdminService {
             }
 
             // Remove classes that are no longer associated
-            existingEducator.getClasses().removeIf(clazz -> !newClasses.contains(clazz));
+            Set<Class> classesToRemove = new HashSet<>();
+            for (Class clazz : existingEducator.getClasses()) {
+                if (!newClasses.contains(clazz)) {
+                    classesToRemove.add(clazz);
+                }
+            }
+            classesToRemove.forEach(existingEducator::removeClass);
 
             // Add new classes
             newClasses.forEach(clazz -> {
@@ -152,6 +174,27 @@ public class AdminService {
                     existingEducator.addClass(clazz);
                 }
             });
+        }
+
+        // --- NEW LOGIC for Many-to-One Subject relationship for Educator update ---
+        if (educatorDto.getSubjectId() != null) {
+            Subject newSubject = subjectRepository.findById(educatorDto.getSubjectId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Subject not found with id: " + educatorDto.getSubjectId()));
+
+            // If subject is changing, remove educator from old subject's list
+            if (existingEducator.getSubject() != null && !existingEducator.getSubject().getId().equals(newSubject.getId())) {
+                existingEducator.getSubject().getEducators().remove(existingEducator);
+            }
+
+            // Assign new subject to educator
+            existingEducator.setSubject(newSubject);
+            // Add educator to new subject's list
+            newSubject.getEducators().add(existingEducator);
+        } else { // If subjectId is null, disassociate educator from any subject
+            if (existingEducator.getSubject() != null) {
+                existingEducator.getSubject().getEducators().remove(existingEducator); // Remove from subject's list
+                existingEducator.setSubject(null); // Disassociate subject from educator
+            }
         }
 
         Educator updatedEducator = educatorRepository.save(existingEducator);
@@ -164,10 +207,15 @@ public class AdminService {
                 .orElseThrow(() -> new ResourceNotFoundException("Educator not found with id: " + id));
         User user = educator.getUser();
 
-        // Disassociate educator from classes before deleting
+        // Remove from classes taught
         new HashSet<>(educator.getClasses()).forEach(educator::removeClass);
 
-        // Delete associated image file if exists
+        // --- NEW LOGIC for Many-to-One Subject relationship when deleting educator ---
+        if (educator.getSubject() != null) {
+            educator.getSubject().getEducators().remove(educator); // Remove educator from subject's list
+            educator.setSubject(null); // Disassociate
+        }
+
         if (educator.getProfileImageUrl() != null && !educator.getProfileImageUrl().isEmpty()) {
             imageUploadService.deleteFile(educator.getProfileImageUrl());
         }
@@ -176,7 +224,7 @@ public class AdminService {
         userRepository.delete(user);
     }
 
-    // --- Student Management ---
+    // --- Student Management --- (No changes needed, already handled ManyToMany)
 
     @Transactional
     public StudentDto createStudent(StudentDto studentDto) {
@@ -209,12 +257,19 @@ public class AdminService {
             student.setProfileImageUrl(studentDto.getProfileImageUrl());
         }
 
-        // Handle single class association for new student
         if (studentDto.getClassId() != null) {
             Class clazz = classRepository.findById(studentDto.getClassId())
                     .orElseThrow(() -> new ResourceNotFoundException("Class not found with id: " + studentDto.getClassId()));
             student.setClazz(clazz);
             clazz.addStudent(student);
+        }
+
+        if (studentDto.getSubjectIds() != null && !studentDto.getSubjectIds().isEmpty()) {
+            Set<Subject> subjects = new HashSet<>(subjectRepository.findAllById(studentDto.getSubjectIds()));
+            if (subjects.size() != studentDto.getSubjectIds().size()) {
+                throw new ResourceNotFoundException("One or more subjects not found.");
+            }
+            subjects.forEach(student::addSubject);
         }
 
         Student savedStudent = studentRepository.save(student);
@@ -262,23 +317,44 @@ public class AdminService {
             existingStudent.setProfileImageUrl(studentDto.getProfileImageUrl());
         }
 
-        // Handle single class association for existing student update
         if (studentDto.getClassId() != null) {
             Class newClass = classRepository.findById(studentDto.getClassId())
                     .orElseThrow(() -> new ResourceNotFoundException("Class not found with id: " + studentDto.getClassId()));
-
-            // If the class is changing, remove from old class's students set
             if (existingStudent.getClazz() != null && !existingStudent.getClazz().equals(newClass)) {
                 existingStudent.getClazz().removeStudent(existingStudent);
             }
             newClass.addStudent(existingStudent);
             existingStudent.setClazz(newClass);
         } else {
-            // If classId is explicitly null, remove student from any associated class
             if (existingStudent.getClazz() != null) {
                 existingStudent.getClazz().removeStudent(existingStudent);
             }
             existingStudent.setClazz(null);
+        }
+
+        if (studentDto.getSubjectIds() != null) {
+            Set<Long> newSubjectIds = new HashSet<>(studentDto.getSubjectIds());
+            Set<Subject> newSubjects = new HashSet<>(subjectRepository.findAllById(newSubjectIds));
+
+            if (newSubjects.size() != newSubjectIds.size()) {
+                throw new ResourceNotFoundException("One or more subjects not found.");
+            }
+
+            Set<Subject> subjectsToRemove = new HashSet<>();
+            for (Subject subject : existingStudent.getSubjects()) {
+                if (!newSubjects.contains(subject)) {
+                    subjectsToRemove.add(subject);
+                }
+            }
+            subjectsToRemove.forEach(existingStudent::removeSubject);
+
+            for (Subject subject : newSubjects) {
+                if (!existingStudent.getSubjects().contains(subject)) {
+                    existingStudent.addSubject(subject);
+                }
+            }
+        } else {
+            new HashSet<>(existingStudent.getSubjects()).forEach(existingStudent::removeSubject);
         }
 
         Student updatedStudent = studentRepository.save(existingStudent);
@@ -291,67 +367,21 @@ public class AdminService {
                 .orElseThrow(() -> new ResourceNotFoundException("Student not found with id: " + id));
         User user = student.getUser();
 
-        // No need to explicitly remove feedback records here due to cascade = CascadeType.ALL on Student entity.
-        // The database's ON DELETE CASCADE will handle it, or JPA will.
-
-        // Disassociate student from class before deleting
-        // This is still important if 'Class' has a bidirectional @OneToMany mapping
-        // to 'Student' and you want to keep the Class entity intact.
         if (student.getClazz() != null) {
             student.getClazz().removeStudent(student);
         }
+
+        new HashSet<>(student.getSubjects()).forEach(student::removeSubject);
 
         if (student.getProfileImageUrl() != null && !student.getProfileImageUrl().isEmpty()) {
             imageUploadService.deleteFile(student.getProfileImageUrl());
         }
 
-        studentRepository.delete(student); // This will trigger the cascade deletion of Feedback
+        studentRepository.delete(student);
         userRepository.delete(user);
     }
 
-    // --- Helper methods to convert Entity to DTO (no changes needed for this specific error) ---
-    private EducatorDto convertToEducatorDto(Educator educator) {
-        EducatorDto dto = new EducatorDto();
-        dto.setId(educator.getId());
-        dto.setUsername(educator.getUser().getUsername());
-        dto.setEmail(educator.getUser().getEmail());
-        dto.setFirstName(educator.getFirstName());
-        dto.setLastName(educator.getLastName());
-        dto.setDateOfBirth(educator.getDateOfBirth());
-        dto.setGender(educator.getGender());
-        dto.setPhoneNumber(educator.getPhoneNumber());
-        dto.setAddress(educator.getAddress());
-        dto.setProfileImageUrl(educator.getProfileImageUrl());
-        dto.setHireDate(educator.getHireDate());
-        dto.setQualification(educator.getQualification());
-        dto.setExperienceYears(educator.getExperienceYears());
-        dto.setRole(educator.getUser().getRole());
-        dto.setClassIds(educator.getClasses().stream()
-                .map(Class::getId)
-                .collect(Collectors.toList()));
-        return dto;
-    }
-
-    private StudentDto convertToStudentDto(Student student) {
-        StudentDto dto = new StudentDto();
-        dto.setId(student.getId());
-        dto.setUsername(student.getUser().getUsername());
-        dto.setEmail(student.getUser().getEmail());
-        dto.setFirstName(student.getFirstName());
-        dto.setLastName(student.getLastName());
-        dto.setDateOfBirth(student.getDateOfBirth());
-        dto.setGender(student.getGender());
-        dto.setPhoneNumber(student.getPhoneNumber());
-        dto.setAddress(student.getAddress());
-        dto.setProfileImageUrl(student.getProfileImageUrl());
-        dto.setEnrollmentDate(student.getEnrollmentDate());
-        dto.setGrade(student.getGrade());
-        dto.setRole(student.getUser().getRole());
-        dto.setClassId(student.getClazz() != null ? student.getClazz().getId() : null);
-        return dto;
-    }
-
-    // --- Class Management (no changes needed for this specific error) ---
+    // --- Class Management ---
 
     @Transactional
     public ClassDto createClass(ClassDto classDto) {
@@ -364,7 +394,6 @@ public class AdminService {
         clazz.setClassCode(classDto.getClassCode());
         clazz.setDescription(classDto.getDescription());
 
-        // Handle educators association during class creation
         if (classDto.getEducators() != null && !classDto.getEducators().isEmpty()) {
             Set<Long> educatorIds = classDto.getEducators().stream()
                     .map(ClassDto.EducatorInfo::getId)
@@ -409,7 +438,6 @@ public class AdminService {
         existingClass.setClassCode(classDto.getClassCode());
         existingClass.setDescription(classDto.getDescription());
 
-        // Handle educators update for class
         if (classDto.getEducators() != null) {
             Set<Long> newEducatorIds = classDto.getEducators().stream()
                     .map(ClassDto.EducatorInfo::getId)
@@ -420,13 +448,21 @@ public class AdminService {
                 throw new ResourceNotFoundException("One or more educators not found.");
             }
 
-            existingClass.getEducators().removeIf(educator -> !newEducators.contains(educator));
+            Set<Educator> educatorsToRemove = new HashSet<>();
+            for (Educator educator : existingClass.getEducators()) {
+                if (!newEducators.contains(educator)) {
+                    educatorsToRemove.add(educator);
+                }
+            }
+            educatorsToRemove.forEach(existingClass::removeEducator);
 
-            newEducators.forEach(educator -> {
+            for (Educator educator : newEducators) {
                 if (!existingClass.getEducators().contains(educator)) {
                     existingClass.addEducator(educator);
                 }
-            });
+            }
+        } else {
+            new HashSet<>(existingClass.getEducators()).forEach(existingClass::removeEducator);
         }
 
         Class updatedClass = classRepository.save(existingClass);
@@ -442,6 +478,204 @@ public class AdminService {
         new HashSet<>(clazz.getEducators()).forEach(clazz::removeEducator);
 
         classRepository.delete(clazz);
+    }
+
+    // --- Subject Management (ADJUSTED METHODS) ---
+
+    @Transactional
+    public SubjectDto createSubject(SubjectDto subjectDto) {
+        if (subjectRepository.existsBySubjectName(subjectDto.getSubjectName())) {
+            throw new IllegalArgumentException("Subject with this name already exists!");
+        }
+
+        Subject subject = new Subject();
+        subject.setSubjectName(subjectDto.getSubjectName());
+        subject.setDescription(subjectDto.getDescription());
+
+        // --- NEW LOGIC for One-to-Many Educators ---
+        if (subjectDto.getEducatorIds() != null && !subjectDto.getEducatorIds().isEmpty()) {
+            Set<Educator> educators = new HashSet<>(educatorRepository.findAllById(subjectDto.getEducatorIds()));
+            if (educators.size() != subjectDto.getEducatorIds().size()) {
+                throw new ResourceNotFoundException("One or more educators not found for this subject.");
+            }
+            for (Educator educator : educators) {
+                if (educator.getSubject() != null) {
+                    throw new IllegalArgumentException("Educator " + educator.getFirstName() + " " + educator.getLastName() + " is already assigned to subject: " + educator.getSubject().getSubjectName());
+                }
+                subject.addEducator(educator); // Use helper method on Subject
+            }
+        }
+
+        // Handle ManyToMany Student assignment (remains the same)
+        if (subjectDto.getStudentIds() != null && !subjectDto.getStudentIds().isEmpty()) {
+            Set<Student> students = new HashSet<>(studentRepository.findAllById(subjectDto.getStudentIds()));
+            if (students.size() != subjectDto.getStudentIds().size()) {
+                throw new ResourceNotFoundException("One or more students not found for subjects.");
+            }
+            for (Student student : students) {
+                subject.addStudent(student);
+            }
+        }
+
+        Subject savedSubject = subjectRepository.save(subject);
+        return convertToSubjectDto(savedSubject);
+    }
+
+    public SubjectDto getSubjectById(Long id) {
+        Subject subject = subjectRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Subject not found with id: " + id));
+        return convertToSubjectDto(subject);
+    }
+
+    public Page<SubjectDto> getAllSubjects(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Subject> subjectsPage = subjectRepository.findAll(pageable);
+        List<SubjectDto> dtoList = subjectsPage.getContent().stream()
+                .map(this::convertToSubjectDto)
+                .collect(Collectors.toList());
+        return new PageImpl<>(dtoList, pageable, subjectsPage.getTotalElements());
+    }
+
+    @Transactional
+    public SubjectDto updateSubject(Long id, SubjectDto subjectDto) {
+        Subject existingSubject = subjectRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Subject not found with id: " + id));
+
+        if (!existingSubject.getSubjectName().equals(subjectDto.getSubjectName()) && subjectRepository.existsBySubjectName(subjectDto.getSubjectName())) {
+            throw new IllegalArgumentException("Subject with this name already exists!");
+        }
+
+        existingSubject.setSubjectName(subjectDto.getSubjectName());
+        existingSubject.setDescription(subjectDto.getDescription());
+
+        // --- NEW LOGIC for One-to-Many Educator update ---
+        if (subjectDto.getEducatorIds() != null) {
+            Set<Long> newEducatorIds = new HashSet<>(subjectDto.getEducatorIds());
+            Set<Educator> newEducators = new HashSet<>(educatorRepository.findAllById(newEducatorIds));
+
+            if (newEducators.size() != newEducatorIds.size()) {
+                throw new ResourceNotFoundException("One or more educators not found for this subject.");
+            }
+
+            // Check for educators already assigned to other subjects
+            for (Educator newEducator : newEducators) {
+                if (newEducator.getSubject() != null && !newEducator.getSubject().getId().equals(existingSubject.getId())) {
+                    throw new IllegalArgumentException("Educator " + newEducator.getFirstName() + " " + newEducator.getLastName() + " is already assigned to subject: " + newEducator.getSubject().getSubjectName());
+                }
+            }
+
+            // Remove educators no longer associated with this subject
+            Set<Educator> educatorsToRemove = new HashSet<>();
+            for (Educator educator : existingSubject.getEducators()) {
+                if (!newEducators.contains(educator)) {
+                    educatorsToRemove.add(educator);
+                }
+            }
+            educatorsToRemove.forEach(existingSubject::removeEducator); // Use helper method
+
+            // Add new educators to this subject
+            for (Educator educator : newEducators) {
+                if (!existingSubject.getEducators().contains(educator)) {
+                    existingSubject.addEducator(educator); // Use helper method
+                }
+            }
+        } else {
+            // If educatorIds is null, clear all educators from this subject
+            new HashSet<>(existingSubject.getEducators()).forEach(existingSubject::removeEducator);
+        }
+
+        // Handle ManyToMany Student update (remains the same)
+        if (subjectDto.getStudentIds() != null) {
+            Set<Long> newStudentIds = new HashSet<>(subjectDto.getStudentIds());
+            Set<Student> newStudents = new HashSet<>(studentRepository.findAllById(newStudentIds));
+
+            if (newStudents.size() != newStudentIds.size()) {
+                throw new ResourceNotFoundException("One or more students not found for subjects.");
+            }
+
+            Set<Student> studentsToRemove = new HashSet<>();
+            for (Student student : existingSubject.getStudents()) {
+                if (!newStudents.contains(student)) {
+                    studentsToRemove.add(student);
+                }
+            }
+            studentsToRemove.forEach(existingSubject::removeStudent);
+
+            for (Student student : newStudents) {
+                if (!existingSubject.getStudents().contains(student)) {
+                    existingSubject.addStudent(student);
+                }
+            }
+        } else {
+            new HashSet<>(existingSubject.getStudents()).forEach(existingSubject::removeStudent);
+        }
+
+        Subject updatedSubject = subjectRepository.save(existingSubject);
+        return convertToSubjectDto(updatedSubject);
+    }
+
+    @Transactional
+    public void deleteSubject(Long id) {
+        Subject subject = subjectRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Subject not found with id: " + id));
+
+        // --- NEW LOGIC: Remove association with all educators ---
+        new HashSet<>(subject.getEducators()).forEach(subject::removeEducator);
+
+        // Remove association with all students
+        new HashSet<>(subject.getStudents()).forEach(subject::removeStudent);
+
+        subjectRepository.delete(subject);
+    }
+
+    // --- Helper methods to convert Entity to DTO ---
+    private EducatorDto convertToEducatorDto(Educator educator) {
+        EducatorDto dto = new EducatorDto();
+        dto.setId(educator.getId());
+        dto.setUsername(educator.getUser().getUsername());
+        dto.setEmail(educator.getUser().getEmail());
+        dto.setFirstName(educator.getFirstName());
+        dto.setLastName(educator.getLastName());
+        dto.setDateOfBirth(educator.getDateOfBirth());
+        dto.setGender(educator.getGender());
+        dto.setPhoneNumber(educator.getPhoneNumber());
+        dto.setAddress(educator.getAddress());
+        dto.setProfileImageUrl(educator.getProfileImageUrl());
+        dto.setHireDate(educator.getHireDate());
+        dto.setQualification(educator.getQualification());
+        dto.setExperienceYears(educator.getExperienceYears());
+        dto.setRole(educator.getUser().getRole());
+        dto.setClassIds(educator.getClasses().stream()
+                .map(Class::getId)
+                .collect(Collectors.toList()));
+        // --- NEW: Populate subjectId and subjectName for EducatorDto ---
+        if (educator.getSubject() != null) {
+            dto.setSubjectId(educator.getSubject().getId());
+            dto.setSubjectName(educator.getSubject().getSubjectName()); // Populate name for convenience
+        }
+        return dto;
+    }
+
+    private StudentDto convertToStudentDto(Student student) {
+        StudentDto dto = new StudentDto();
+        dto.setId(student.getId());
+        dto.setUsername(student.getUser().getUsername());
+        dto.setEmail(student.getUser().getEmail());
+        dto.setFirstName(student.getFirstName());
+        dto.setLastName(student.getLastName());
+        dto.setDateOfBirth(student.getDateOfBirth());
+        dto.setGender(student.getGender());
+        dto.setPhoneNumber(student.getPhoneNumber());
+        dto.setAddress(student.getAddress());
+        dto.setProfileImageUrl(student.getProfileImageUrl());
+        dto.setEnrollmentDate(student.getEnrollmentDate());
+        dto.setGrade(student.getGrade());
+        dto.setRole(student.getUser().getRole());
+        dto.setClassId(student.getClazz() != null ? student.getClazz().getId() : null);
+        dto.setSubjectIds(student.getSubjects().stream()
+                .map(Subject::getId)
+                .collect(Collectors.toList()));
+        return dto;
     }
 
     private ClassDto convertToClassDto(Class clazz) {
@@ -482,6 +716,38 @@ public class AdminService {
                     .sorted(Comparator.comparing(ClassDto.StudentInfo::getLastName))
                     .collect(Collectors.toList()));
         }
+        return dto;
+    }
+
+    // --- NEW: Helper method to convert Subject entity to SubjectDto ---
+    private SubjectDto convertToSubjectDto(Subject subject) {
+        SubjectDto dto = new SubjectDto();
+        dto.setId(subject.getId());
+        dto.setSubjectName(subject.getSubjectName());
+        dto.setDescription(subject.getDescription());
+        // --- NEW: Populate educatorIds and EducatorInfo for SubjectDto ---
+        dto.setEducatorIds(subject.getEducators().stream()
+                .map(Educator::getId)
+                .collect(Collectors.toList()));
+
+        // Optionally, populate detailed educator info if needed in the DTO response
+        dto.setEducators(subject.getEducators().stream()
+                .map(educator -> {
+                    SubjectDto.EducatorInfo info = new SubjectDto.EducatorInfo();
+                    info.setId(educator.getId());
+                    info.setFirstName(educator.getFirstName());
+                    info.setLastName(educator.getLastName());
+                    if (educator.getUser() != null) {
+                        info.setEmail(educator.getUser().getEmail());
+                    }
+                    return info;
+                })
+                .sorted(Comparator.comparing(SubjectDto.EducatorInfo::getLastName))
+                .collect(Collectors.toList()));
+
+        dto.setStudentIds(subject.getStudents().stream()
+                .map(Student::getId)
+                .collect(Collectors.toList()));
         return dto;
     }
 }

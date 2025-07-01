@@ -3,21 +3,25 @@ package com.campus.backend.services;
 import com.campus.backend.dtos.ClassDto;
 import com.campus.backend.dtos.FeedbackDto;
 import com.campus.backend.dtos.StudentDto;
+import com.campus.backend.dtos.SubjectDto; // Import SubjectDto
 import com.campus.backend.entity.Feedback;
 import com.campus.backend.entity.Student;
 import com.campus.backend.entity.User;
+import com.campus.backend.entity.Class; // Ensure this is imported correctly
+import com.campus.backend.entity.Subject; // Import Subject
+import com.campus.backend.entity.Educator; // Import Educator for SubjectDto.EducatorInfo
 import com.campus.backend.exceptions.ResourceNotFoundException;
 import com.campus.backend.repositories.FeedbackRepository;
 import com.campus.backend.repositories.StudentRepository;
 import com.campus.backend.repositories.UserRepository;
+import com.campus.backend.repositories.SubjectRepository; // Import SubjectRepository
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
-import com.campus.backend.entity.Class; // Ensure this is imported correctly
 
-import java.util.Collections; // Import Collections
+import java.util.Collections;
 import java.util.List;
-import java.util.Optional; // Import Optional
-import java.util.Comparator; // For sorting student/educator lists in DTO
+import java.util.Optional;
+import java.util.Comparator;
 import java.util.stream.Collectors;
 
 @Service
@@ -26,12 +30,14 @@ public class StudentService {
     private final StudentRepository studentRepository;
     private final UserRepository userRepository;
     private final FeedbackRepository feedbackRepository;
+    private final SubjectRepository subjectRepository;
 
     public StudentService(StudentRepository studentRepository, UserRepository userRepository,
-                          FeedbackRepository feedbackRepository) {
+                          FeedbackRepository feedbackRepository, SubjectRepository subjectRepository) {
         this.studentRepository = studentRepository;
         this.userRepository = userRepository;
         this.feedbackRepository = feedbackRepository;
+        this.subjectRepository = subjectRepository;
     }
 
     public StudentDto getStudentProfile(UserDetails userDetails) {
@@ -42,18 +48,16 @@ public class StudentService {
         return convertToStudentDto(student);
     }
 
-    // --- MODIFIED: getEnrolledClasses to return Optional<ClassDto> ---
     public Optional<ClassDto> getEnrolledClass(UserDetails userDetails) {
         User user = userRepository.findByUsername(userDetails.getUsername())
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
         Student student = studentRepository.findByUser(user)
                 .orElseThrow(() -> new ResourceNotFoundException("Student profile not found"));
 
-        // A student is now associated with a single class (clazz)
         if (student.getClazz() != null) {
             return Optional.of(convertToClassDto(student.getClazz()));
         }
-        return Optional.empty(); // Return empty Optional if student is not in a class
+        return Optional.empty();
     }
 
     public List<FeedbackDto> getFeedbackForStudent(UserDetails userDetails) {
@@ -67,6 +71,18 @@ public class StudentService {
                 .map(this::convertToFeedbackDto)
                 .collect(Collectors.toList());
     }
+
+    public List<SubjectDto> getEnrolledSubjects(UserDetails userDetails) {
+        User user = userRepository.findByUsername(userDetails.getUsername())
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        Student student = studentRepository.findByUser(user)
+                .orElseThrow(() -> new ResourceNotFoundException("Student profile not found"));
+
+        return student.getSubjects().stream()
+                .map(this::convertToSubjectDto)
+                .collect(Collectors.toList());
+    }
+
 
     // --- Helper methods to convert Entity to DTO ---
     private StudentDto convertToStudentDto(Student student) {
@@ -84,8 +100,10 @@ public class StudentService {
         dto.setEnrollmentDate(student.getEnrollmentDate());
         dto.setGrade(student.getGrade());
         dto.setRole(student.getUser().getRole());
-        // --- MODIFIED: classId (singular) ---
         dto.setClassId(student.getClazz() != null ? student.getClazz().getId() : null);
+        dto.setSubjectIds(student.getSubjects().stream()
+                .map(Subject::getId)
+                .collect(Collectors.toList()));
         return dto;
     }
 
@@ -95,9 +113,6 @@ public class StudentService {
         dto.setClassName(clazz.getClassName());
         dto.setClassCode(clazz.getClassCode());
         dto.setDescription(clazz.getDescription());
-
-        // FIX: A class now has multiple educators (Set<Educator>)
-        // Collect educator details into a list of EducatorInfo DTOs
         if (clazz.getEducators() != null && !clazz.getEducators().isEmpty()) {
             dto.setEducators(clazz.getEducators().stream()
                     .map(educator -> {
@@ -105,19 +120,17 @@ public class StudentService {
                         educatorInfo.setId(educator.getId());
                         educatorInfo.setFirstName(educator.getFirstName());
                         educatorInfo.setLastName(educator.getLastName());
-                        // Include email if the EducatorInfo DTO has it
                         if (educator.getUser() != null) {
                             educatorInfo.setEmail(educator.getUser().getEmail());
                         }
                         return educatorInfo;
                     })
-                    .sorted(Comparator.comparing(ClassDto.EducatorInfo::getLastName)) // Optional: sort
+                    .sorted(Comparator.comparing(ClassDto.EducatorInfo::getLastName))
                     .collect(Collectors.toList()));
         } else {
-            dto.setEducators(Collections.emptyList()); // Use Collections.emptyList() for immutability
+            dto.setEducators(Collections.emptyList());
         }
 
-        // --- NEW: Populate students in ClassDto ---
         if (clazz.getStudents() != null && !clazz.getStudents().isEmpty()) {
             dto.setStudents(clazz.getStudents().stream()
                     .map(student -> {
@@ -125,19 +138,16 @@ public class StudentService {
                         studentInfo.setId(student.getId());
                         studentInfo.setFirstName(student.getFirstName());
                         studentInfo.setLastName(student.getLastName());
-                        // Include email if the StudentInfo DTO has it
                         if (student.getUser() != null) {
                             studentInfo.setEmail(student.getUser().getEmail());
                         }
                         return studentInfo;
                     })
-                    .sorted(Comparator.comparing(ClassDto.StudentInfo::getLastName)) // Optional: sort
+                    .sorted(Comparator.comparing(ClassDto.StudentInfo::getLastName))
                     .collect(Collectors.toList()));
         } else {
-            dto.setStudents(Collections.emptyList()); // Ensure it's not null if no students
+            dto.setStudents(Collections.emptyList());
         }
-        // --- END NEW ---
-
         return dto;
     }
 
@@ -155,6 +165,38 @@ public class StudentService {
         dto.setFeedbackText(feedback.getFeedbackText());
         dto.setRating(feedback.getRating());
         dto.setFeedbackDate(feedback.getFeedbackDate());
+        return dto;
+    }
+
+    // --- NEW: Helper method to convert Subject entity to SubjectDto ---
+    private SubjectDto convertToSubjectDto(Subject subject) {
+        SubjectDto dto = new SubjectDto();
+        dto.setId(subject.getId());
+        dto.setSubjectName(subject.getSubjectName());
+        dto.setDescription(subject.getDescription());
+        // Populate educatorIds for SubjectDto
+        dto.setEducatorIds(subject.getEducators().stream()
+                .map(Educator::getId)
+                .collect(Collectors.toList()));
+
+        // Optionally, populate detailed educator info if needed in the DTO response
+        dto.setEducators(subject.getEducators().stream()
+                .map(educator -> {
+                    SubjectDto.EducatorInfo info = new SubjectDto.EducatorInfo();
+                    info.setId(educator.getId());
+                    info.setFirstName(educator.getFirstName());
+                    info.setLastName(educator.getLastName());
+                    if (educator.getUser() != null) {
+                        info.setEmail(educator.getUser().getEmail());
+                    }
+                    return info;
+                })
+                .sorted(Comparator.comparing(SubjectDto.EducatorInfo::getLastName))
+                .collect(Collectors.toList()));
+
+        dto.setStudentIds(subject.getStudents().stream()
+                .map(Student::getId)
+                .collect(Collectors.toList()));
         return dto;
     }
 }

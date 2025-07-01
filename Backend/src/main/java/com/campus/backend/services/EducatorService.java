@@ -5,21 +5,20 @@ import com.campus.backend.entity.*;
 import com.campus.backend.dtos.ClassDto;
 import com.campus.backend.dtos.EducatorDto;
 import com.campus.backend.dtos.StudentDto;
-import com.campus.backend.entity.Class; // Ensure this import is correct
+import com.campus.backend.entity.Class;
 import com.campus.backend.exceptions.ResourceNotFoundException;
 import com.campus.backend.repositories.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collections; // Import for empty lists
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.Comparator; // Added for sorting educators by ID in DTO for consistent output
+import java.util.Comparator;
 import java.util.stream.Collectors;
 
 @Service
@@ -69,7 +68,6 @@ public class EducatorService {
                 .sorted(Comparator.comparing(StudentDto::getLastName)) // Optional: sort for consistent output
                 .collect(Collectors.toList());
 
-        // Manual pagination remains correct for a Set<Student> converted to List
         int start = Math.min(page * size, studentDtos.size());
         int end = Math.min((start + size), studentDtos.size());
         List<StudentDto> paginatedStudents = studentDtos.subList(start, end);
@@ -103,8 +101,6 @@ public class EducatorService {
             throw new IllegalArgumentException("Educator does not teach this class.");
         }
 
-        // --- MODIFIED: Check if the student is actually in this class (ManyToOne relationship) ---
-        // A student has only one class, so we check if that class matches the provided classId
         if (student.getClazz() == null || !student.getClazz().getId().equals(clazz.getId())) {
             throw new IllegalArgumentException("Student is not enrolled in this class.");
         }
@@ -183,6 +179,13 @@ public class EducatorService {
         dto.setClassIds(educator.getClasses().stream()
                 .map(Class::getId)
                 .collect(Collectors.toList()));
+
+        // --- FIX: Populate subjectId and subjectName for EducatorDto ---
+        if (educator.getSubject() != null) {
+            dto.setSubjectId(educator.getSubject().getId());
+            dto.setSubjectName(educator.getSubject().getSubjectName());
+        }
+        // --- END FIX ---
         return dto;
     }
 
@@ -252,6 +255,12 @@ public class EducatorService {
         dto.setRole(student.getUser().getRole());
         // --- MODIFIED: classId (singular) ---
         dto.setClassId(student.getClazz() != null ? student.getClazz().getId() : null);
+
+        // --- ADDED: Populate subjectIds for StudentDto ---
+        dto.setSubjectIds(student.getSubjects().stream()
+                .map(Subject::getId)
+                .collect(Collectors.toList()));
+        // --- END ADDED ---
         return dto;
     }
 

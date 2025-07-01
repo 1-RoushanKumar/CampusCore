@@ -2,7 +2,7 @@ package com.campus.backend.dtos;
 import com.campus.backend.entity.enums.Role;
 import lombok.Data;
 import java.time.LocalDate;
-// import java.util.List; // No longer a list of class IDs, but a single class ID
+import java.util.List; // Re-import List for subjects
 
 @Data
 public class StudentDto {
@@ -20,7 +20,7 @@ public class StudentDto {
     private LocalDate enrollmentDate;
     private String grade;
     private Role role = Role.ROLE_STUDENT;
-    // --- CHANGE STARTS HERE ---
     private Long classId; // Single class ID
-    // --- CHANGE ENDS HERE ---
+    // --- NEW: List of subject IDs for ManyToMany relationship ---
+    private List<Long> subjectIds;
 }

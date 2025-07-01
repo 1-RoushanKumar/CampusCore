@@ -9,9 +9,9 @@ import java.util.List;
 @Data
 public class EducatorDto {
     private Long id;
-    private String username; // From User entity
-    private String email;    // From User entity
-    private String password; // For creation/update
+    private String username;
+    private String email;
+    private String password;
     private String firstName;
     private String lastName;
     private LocalDate dateOfBirth;
@@ -22,6 +22,10 @@ public class EducatorDto {
     private LocalDate hireDate;
     private String qualification;
     private Integer experienceYears;
-    private Role role = Role.ROLE_EDUCATOR; // Default role
-    private List<Long> classIds; // New field to hold class IDs
+    private Role role = Role.ROLE_EDUCATOR;
+    private List<Long> classIds;
+    // Remains Long, as an Educator still teaches only ONE Subject
+    private Long subjectId;
+    // Add subject name for display in DTO
+    private String subjectName;
 }
