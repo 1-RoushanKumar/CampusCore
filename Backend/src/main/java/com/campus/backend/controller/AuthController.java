@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/auth")
+@CrossOrigin("*") // Allow all origins for CORS; adjust as needed for security
 public class AuthController {
 
     private final AuthService authService;

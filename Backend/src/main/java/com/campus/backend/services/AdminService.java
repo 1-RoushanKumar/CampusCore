@@ -35,21 +35,20 @@ public class AdminService {
     private final StudentRepository studentRepository;
     private final PasswordEncoder passwordEncoder;
     private final ImageUploadService imageUploadService;
-    private final ClassRepository classRepository; // Inject ClassRepository
+    private final ClassRepository classRepository;
 
     public AdminService(UserRepository userRepository, EducatorRepository educatorRepository,
                         StudentRepository studentRepository, PasswordEncoder passwordEncoder,
-                        ImageUploadService imageUploadService, ClassRepository classRepository) { // Add ClassRepository
+                        ImageUploadService imageUploadService, ClassRepository classRepository) {
         this.userRepository = userRepository;
         this.educatorRepository = educatorRepository;
         this.studentRepository = studentRepository;
         this.passwordEncoder = passwordEncoder;
         this.imageUploadService = imageUploadService;
-        this.classRepository = classRepository; // Initialize
+        this.classRepository = classRepository;
     }
 
-    // --- Educator Management ---
-
+    // --- Educator Management (no changes needed for this specific error) ---
     @Transactional
     public EducatorDto createEducator(EducatorDto educatorDto) {
         if (userRepository.existsByUsername(educatorDto.getUsername())) {
@@ -121,7 +120,7 @@ public class AdminService {
         if (educatorDto.getPassword() != null && !educatorDto.getPassword().isEmpty()) {
             user.setPassword(passwordEncoder.encode(educatorDto.getPassword()));
         }
-        userRepository.save(user); // Save user changes
+        userRepository.save(user);
 
         existingEducator.setFirstName(educatorDto.getFirstName());
         existingEducator.setLastName(educatorDto.getLastName());
@@ -138,7 +137,7 @@ public class AdminService {
         }
 
         // Handle class associations for existing educator
-        if (educatorDto.getClassIds() != null) { // If classIds is provided, update associations
+        if (educatorDto.getClassIds() != null) {
             Set<Class> newClasses = new HashSet<>(classRepository.findAllById(educatorDto.getClassIds()));
             if (newClasses.size() != educatorDto.getClassIds().size()) {
                 throw new ResourceNotFoundException("One or more classes not found.");
@@ -174,7 +173,7 @@ public class AdminService {
         }
 
         educatorRepository.delete(educator);
-        userRepository.delete(user); // Also delete the associated user
+        userRepository.delete(user);
     }
 
     // --- Student Management ---
@@ -210,15 +209,13 @@ public class AdminService {
             student.setProfileImageUrl(studentDto.getProfileImageUrl());
         }
 
-        // --- CHANGE STARTS HERE ---
         // Handle single class association for new student
         if (studentDto.getClassId() != null) {
             Class clazz = classRepository.findById(studentDto.getClassId())
                     .orElseThrow(() -> new ResourceNotFoundException("Class not found with id: " + studentDto.getClassId()));
-            student.setClazz(clazz); // Set the class directly on the student
-            clazz.addStudent(student); // Use helper method to maintain bidirectional relationship
+            student.setClazz(clazz);
+            clazz.addStudent(student);
         }
-        // --- CHANGE ENDS HERE ---
 
         Student savedStudent = studentRepository.save(student);
         return convertToStudentDto(savedStudent);
@@ -265,7 +262,6 @@ public class AdminService {
             existingStudent.setProfileImageUrl(studentDto.getProfileImageUrl());
         }
 
-        // --- CHANGE STARTS HERE ---
         // Handle single class association for existing student update
         if (studentDto.getClassId() != null) {
             Class newClass = classRepository.findById(studentDto.getClassId())
@@ -273,18 +269,17 @@ public class AdminService {
 
             // If the class is changing, remove from old class's students set
             if (existingStudent.getClazz() != null && !existingStudent.getClazz().equals(newClass)) {
-                existingStudent.getClazz().removeStudent(existingStudent); // Use helper to remove
+                existingStudent.getClazz().removeStudent(existingStudent);
             }
-            newClass.addStudent(existingStudent); // Use helper to add to new class
-            existingStudent.setClazz(newClass); // Set the new class
+            newClass.addStudent(existingStudent);
+            existingStudent.setClazz(newClass);
         } else {
             // If classId is explicitly null, remove student from any associated class
             if (existingStudent.getClazz() != null) {
                 existingStudent.getClazz().removeStudent(existingStudent);
             }
-            existingStudent.setClazz(null); // Ensure the student entity itself has no class
+            existingStudent.setClazz(null);
         }
-        // --- CHANGE ENDS HERE ---
 
         Student updatedStudent = studentRepository.save(existingStudent);
         return convertToStudentDto(updatedStudent);
@@ -296,22 +291,25 @@ public class AdminService {
                 .orElseThrow(() -> new ResourceNotFoundException("Student not found with id: " + id));
         User user = student.getUser();
 
-        // --- CHANGE STARTS HERE ---
+        // No need to explicitly remove feedback records here due to cascade = CascadeType.ALL on Student entity.
+        // The database's ON DELETE CASCADE will handle it, or JPA will.
+
         // Disassociate student from class before deleting
+        // This is still important if 'Class' has a bidirectional @OneToMany mapping
+        // to 'Student' and you want to keep the Class entity intact.
         if (student.getClazz() != null) {
-            student.getClazz().removeStudent(student); // Use helper method to remove
+            student.getClazz().removeStudent(student);
         }
-        // --- CHANGE ENDS HERE ---
 
         if (student.getProfileImageUrl() != null && !student.getProfileImageUrl().isEmpty()) {
             imageUploadService.deleteFile(student.getProfileImageUrl());
         }
 
-        studentRepository.delete(student);
+        studentRepository.delete(student); // This will trigger the cascade deletion of Feedback
         userRepository.delete(user);
     }
 
-    // --- Helper methods to convert Entity to DTO ---
+    // --- Helper methods to convert Entity to DTO (no changes needed for this specific error) ---
     private EducatorDto convertToEducatorDto(Educator educator) {
         EducatorDto dto = new EducatorDto();
         dto.setId(educator.getId());
@@ -328,7 +326,6 @@ public class AdminService {
         dto.setQualification(educator.getQualification());
         dto.setExperienceYears(educator.getExperienceYears());
         dto.setRole(educator.getUser().getRole());
-        // Populate classIds
         dto.setClassIds(educator.getClasses().stream()
                 .map(Class::getId)
                 .collect(Collectors.toList()));
@@ -350,13 +347,11 @@ public class AdminService {
         dto.setEnrollmentDate(student.getEnrollmentDate());
         dto.setGrade(student.getGrade());
         dto.setRole(student.getUser().getRole());
-        // --- CHANGE STARTS HERE ---
-        dto.setClassId(student.getClazz() != null ? student.getClazz().getId() : null); // Single class ID
-        // --- CHANGE ENDS HERE ---
+        dto.setClassId(student.getClazz() != null ? student.getClazz().getId() : null);
         return dto;
     }
 
-    // --- Class Management ---
+    // --- Class Management (no changes needed for this specific error) ---
 
     @Transactional
     public ClassDto createClass(ClassDto classDto) {
@@ -379,7 +374,7 @@ public class AdminService {
             if (educators.size() != educatorIds.size()) {
                 throw new ResourceNotFoundException("One or more educators not found.");
             }
-            educators.forEach(clazz::addEducator); // Use helper method to maintain bidirectional relationship
+            educators.forEach(clazz::addEducator);
         }
 
         Class savedClass = classRepository.save(clazz);
@@ -406,7 +401,6 @@ public class AdminService {
         Class existingClass = classRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Class not found with id: " + id));
 
-        // Check for unique class code if it's changing
         if (!existingClass.getClassCode().equals(classDto.getClassCode()) && classRepository.existsByClassCode(classDto.getClassCode())) {
             throw new IllegalArgumentException("Class with this code already exists!");
         }
@@ -416,7 +410,7 @@ public class AdminService {
         existingClass.setDescription(classDto.getDescription());
 
         // Handle educators update for class
-        if (classDto.getEducators() != null) { // If educators are provided in DTO, update associations
+        if (classDto.getEducators() != null) {
             Set<Long> newEducatorIds = classDto.getEducators().stream()
                     .map(ClassDto.EducatorInfo::getId)
                     .collect(Collectors.toSet());
@@ -426,10 +420,8 @@ public class AdminService {
                 throw new ResourceNotFoundException("One or more educators not found.");
             }
 
-            // Remove educators no longer associated
             existingClass.getEducators().removeIf(educator -> !newEducators.contains(educator));
 
-            // Add new educators
             newEducators.forEach(educator -> {
                 if (!existingClass.getEducators().contains(educator)) {
                     existingClass.addEducator(educator);
@@ -446,16 +438,12 @@ public class AdminService {
         Class clazz = classRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Class not found with id: " + id));
 
-        // Disassociate students and educators from the class before deleting
         new HashSet<>(clazz.getStudents()).forEach(clazz::removeStudent);
         new HashSet<>(clazz.getEducators()).forEach(clazz::removeEducator);
 
         classRepository.delete(clazz);
     }
 
-    // --- Helper methods to convert Entity to DTO ---
-    // (Ensure convertToClassDto handles multiple educators as discussed previously)
-    // --- NEW HELPER METHOD FOR CLASS DTO ---
     private ClassDto convertToClassDto(Class clazz) {
         ClassDto dto = new ClassDto();
         dto.setId(clazz.getId());
@@ -463,7 +451,6 @@ public class AdminService {
         dto.setClassCode(clazz.getClassCode());
         dto.setDescription(clazz.getDescription());
 
-        // Populate educators
         if (clazz.getEducators() != null) {
             dto.setEducators(clazz.getEducators().stream()
                     .map(educator -> {
@@ -476,11 +463,10 @@ public class AdminService {
                         }
                         return info;
                     })
-                    .sorted(Comparator.comparing(ClassDto.EducatorInfo::getLastName)) // Optional: sort by last name
+                    .sorted(Comparator.comparing(ClassDto.EducatorInfo::getLastName))
                     .collect(Collectors.toList()));
         }
 
-        // Populate students
         if (clazz.getStudents() != null) {
             dto.setStudents(clazz.getStudents().stream()
                     .map(student -> {
@@ -493,7 +479,7 @@ public class AdminService {
                         }
                         return info;
                     })
-                    .sorted(Comparator.comparing(ClassDto.StudentInfo::getLastName)) // Optional: sort by last name
+                    .sorted(Comparator.comparing(ClassDto.StudentInfo::getLastName))
                     .collect(Collectors.toList()));
         }
         return dto;

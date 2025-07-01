@@ -4,19 +4,17 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.EqualsAndHashCode; // Import EqualsAndHashCode
+import lombok.EqualsAndHashCode;
 
 import java.time.LocalDate;
-// No longer need Set<Class> for a single class, so remove HashSet and Set imports for classes
-// import java.util.HashSet;
-// import java.util.Set;
+import java.util.Set; // Import Set for the feedback collection
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
 @Table(name = "students")
-@EqualsAndHashCode(exclude = {"user", "clazz"}) // EXCLUDE user (OneToOne) and now 'clazz' (ManyToOne)
+@EqualsAndHashCode(exclude = {"user", "clazz", "feedback"}) // EXCLUDE 'feedback' as well
 public class Student {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -41,11 +39,12 @@ public class Student {
     private LocalDate enrollmentDate;
     private String grade;
 
-    // --- CHANGE STARTS HERE ---
-    @ManyToOne(fetch = FetchType.LAZY) // Student is on the Many side
-    @JoinColumn(name = "class_id") // Foreign key column in students table
-    private Class clazz; // Renamed to 'clazz' to avoid keyword conflict, if not already
-    // --- CHANGE ENDS HERE ---
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "class_id")
+    private Class clazz;
 
-    // Removed addClass/removeClass helper methods as relationship is no longer ManyToMany
+    // --- ADD THIS RELATIONSHIP FOR FEEDBACK ---
+    @OneToMany(mappedBy = "student", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<Feedback> feedback; // A student can have multiple feedback entries
+    // --- END ADDITION ---
 }
