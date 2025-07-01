@@ -381,6 +381,7 @@ public class AdminService {
         userRepository.delete(user);
     }
 
+
     // --- Class Management ---
 
     @Transactional
@@ -479,6 +480,7 @@ public class AdminService {
 
         classRepository.delete(clazz);
     }
+
 
     // --- Subject Management (ADJUSTED METHODS) ---
 

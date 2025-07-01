@@ -208,6 +208,9 @@ public class AdminController {
         return ResponseEntity.noContent().build();
     }
 
+
+    // --- Subject Management ---
+
     @PostMapping("/subjects")
     public ResponseEntity<SubjectDto> createSubject(@Valid @RequestBody SubjectDto subjectDto) {
         try {
