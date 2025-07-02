@@ -40,6 +40,8 @@ public class EducatorService {
         this.userRepository = userRepository;
     }
 
+// Assuming this is part of an EducatorService class
+
     public EducatorDto getEducatorProfile(UserDetails userDetails) {
         User user = userRepository.findByUsername(userDetails.getUsername())
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
@@ -166,21 +168,37 @@ public class EducatorService {
         dto.setEmail(educator.getUser().getEmail());
         dto.setFirstName(educator.getFirstName());
         dto.setLastName(educator.getLastName());
+        dto.setEducatorHindiName(educator.getEducatorHindiName()); // New Field
         dto.setDateOfBirth(educator.getDateOfBirth());
         dto.setGender(educator.getGender());
         dto.setPhoneNumber(educator.getPhoneNumber());
-        dto.setAddress(educator.getAddress());
+        dto.setAlternatePhoneNumber(educator.getAlternatePhoneNumber()); // New Field
+
+        // New Address Fields
+        dto.setAddressLine1(educator.getAddressLine1());
+        dto.setAddressLine2(educator.getAddressLine2());
+        dto.setCity(educator.getCity());
+        dto.setState(educator.getState());
+        dto.setPincode(educator.getPincode());
+        dto.setCountry(educator.getCountry());
+
+        dto.setNationality(educator.getNationality()); // New Field
+
         dto.setProfileImageUrl(educator.getProfileImageUrl());
         dto.setHireDate(educator.getHireDate());
         dto.setQualification(educator.getQualification());
         dto.setExperienceYears(educator.getExperienceYears());
+        dto.setDesignation(educator.getDesignation()); // New Field
+        dto.setAadharNumber(educator.getAadharNumber()); // New Field
+        dto.setAccountNumber(educator.getAccountNumber()); // New Field
+
         dto.setRole(educator.getUser().getRole());
         // Populate classIds for the EducatorDto (Many-to-Many is still valid for educators)
         dto.setClassIds(educator.getClasses().stream()
                 .map(Class::getId)
                 .collect(Collectors.toList()));
 
-        // --- FIX: Populate subjectId and subjectName for EducatorDto ---
+        // --- Populate subjectId and subjectName for EducatorDto ---
         if (educator.getSubject() != null) {
             dto.setSubjectId(educator.getSubject().getId());
             dto.setSubjectName(educator.getSubject().getSubjectName());

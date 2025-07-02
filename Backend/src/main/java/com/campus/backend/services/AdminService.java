@@ -76,13 +76,28 @@ public class AdminService {
         educator.setUser(savedUser);
         educator.setFirstName(educatorDto.getFirstName());
         educator.setLastName(educatorDto.getLastName());
+        educator.setEducatorHindiName(educatorDto.getEducatorHindiName()); // New Field
         educator.setDateOfBirth(educatorDto.getDateOfBirth());
         educator.setGender(educatorDto.getGender());
         educator.setPhoneNumber(educatorDto.getPhoneNumber());
-        educator.setAddress(educatorDto.getAddress());
+        educator.setAlternatePhoneNumber(educatorDto.getAlternatePhoneNumber()); // New Field
+
+        // New Address Fields
+        educator.setAddressLine1(educatorDto.getAddressLine1());
+        educator.setAddressLine2(educatorDto.getAddressLine2());
+        educator.setCity(educatorDto.getCity());
+        educator.setState(educatorDto.getState());
+        educator.setPincode(educatorDto.getPincode());
+        educator.setCountry(educatorDto.getCountry());
+
+        educator.setNationality(educatorDto.getNationality()); // New Field
+
         educator.setHireDate(educatorDto.getHireDate());
         educator.setQualification(educatorDto.getQualification());
         educator.setExperienceYears(educatorDto.getExperienceYears());
+        educator.setDesignation(educatorDto.getDesignation()); // New Field
+        educator.setAadharNumber(educatorDto.getAadharNumber()); // New Field
+        educator.setAccountNumber(educatorDto.getAccountNumber()); // New Field
 
         if (educatorDto.getProfileImageUrl() != null && !educatorDto.getProfileImageUrl().isEmpty()) {
             educator.setProfileImageUrl(educatorDto.getProfileImageUrl());
@@ -132,8 +147,20 @@ public class AdminService {
                 .orElseThrow(() -> new ResourceNotFoundException("Educator not found with id: " + id));
 
         User user = existingEducator.getUser();
-        user.setUsername(educatorDto.getUsername());
-        user.setEmail(educatorDto.getEmail());
+        // Only update username/email if they are different and not taken by another user
+        if (!user.getUsername().equals(educatorDto.getUsername())) {
+            if (userRepository.existsByUsername(educatorDto.getUsername())) {
+                throw new IllegalArgumentException("Username already exists!");
+            }
+            user.setUsername(educatorDto.getUsername());
+        }
+        if (!user.getEmail().equals(educatorDto.getEmail())) {
+            if (userRepository.existsByEmail(educatorDto.getEmail())) {
+                throw new IllegalArgumentException("Email already exists!");
+            }
+            user.setEmail(educatorDto.getEmail());
+        }
+
         if (educatorDto.getPassword() != null && !educatorDto.getPassword().isEmpty()) {
             user.setPassword(passwordEncoder.encode(educatorDto.getPassword()));
         }
@@ -141,13 +168,28 @@ public class AdminService {
 
         existingEducator.setFirstName(educatorDto.getFirstName());
         existingEducator.setLastName(educatorDto.getLastName());
+        existingEducator.setEducatorHindiName(educatorDto.getEducatorHindiName()); // New Field
         existingEducator.setDateOfBirth(educatorDto.getDateOfBirth());
         existingEducator.setGender(educatorDto.getGender());
         existingEducator.setPhoneNumber(educatorDto.getPhoneNumber());
-        existingEducator.setAddress(educatorDto.getAddress());
+        existingEducator.setAlternatePhoneNumber(educatorDto.getAlternatePhoneNumber()); // New Field
+
+        // New Address Fields
+        existingEducator.setAddressLine1(educatorDto.getAddressLine1());
+        existingEducator.setAddressLine2(educatorDto.getAddressLine2());
+        existingEducator.setCity(educatorDto.getCity());
+        existingEducator.setState(educatorDto.getState());
+        existingEducator.setPincode(educatorDto.getPincode());
+        existingEducator.setCountry(educatorDto.getCountry());
+
+        existingEducator.setNationality(educatorDto.getNationality()); // New Field
+
         existingEducator.setHireDate(educatorDto.getHireDate());
         existingEducator.setQualification(educatorDto.getQualification());
         existingEducator.setExperienceYears(educatorDto.getExperienceYears());
+        existingEducator.setDesignation(educatorDto.getDesignation()); // New Field
+        existingEducator.setAadharNumber(educatorDto.getAadharNumber()); // New Field
+        existingEducator.setAccountNumber(educatorDto.getAccountNumber()); // New Field
 
         if (educatorDto.getProfileImageUrl() != null && !educatorDto.getProfileImageUrl().isEmpty()) {
             existingEducator.setProfileImageUrl(educatorDto.getProfileImageUrl());
@@ -675,14 +717,30 @@ public class AdminService {
         dto.setEmail(educator.getUser().getEmail());
         dto.setFirstName(educator.getFirstName());
         dto.setLastName(educator.getLastName());
+        dto.setEducatorHindiName(educator.getEducatorHindiName()); // New Field
         dto.setDateOfBirth(educator.getDateOfBirth());
         dto.setGender(educator.getGender());
         dto.setPhoneNumber(educator.getPhoneNumber());
-        dto.setAddress(educator.getAddress());
+        dto.setAlternatePhoneNumber(educator.getAlternatePhoneNumber()); // New Field
+
+        // New Address Fields
+        dto.setAddressLine1(educator.getAddressLine1());
+        dto.setAddressLine2(educator.getAddressLine2());
+        dto.setCity(educator.getCity());
+        dto.setState(educator.getState());
+        dto.setPincode(educator.getPincode());
+        dto.setCountry(educator.getCountry());
+
+        dto.setNationality(educator.getNationality()); // New Field
+
         dto.setProfileImageUrl(educator.getProfileImageUrl());
         dto.setHireDate(educator.getHireDate());
         dto.setQualification(educator.getQualification());
         dto.setExperienceYears(educator.getExperienceYears());
+        dto.setDesignation(educator.getDesignation()); // New Field
+        dto.setAadharNumber(educator.getAadharNumber()); // New Field
+        dto.setAccountNumber(educator.getAccountNumber()); // New Field
+
         dto.setRole(educator.getUser().getRole());
         dto.setClassIds(educator.getClasses().stream()
                 .map(Class::getId)
