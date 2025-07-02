@@ -241,26 +241,53 @@ public class EducatorService {
     private StudentDto convertToStudentDto(Student student) {
         StudentDto dto = new StudentDto();
         dto.setId(student.getId());
-        dto.setUsername(student.getUser().getUsername());
-        dto.setEmail(student.getUser().getEmail());
+        // User details
+        if (student.getUser() != null) { // Defensive check, though User is not-nullable
+            dto.setUsername(student.getUser().getUsername());
+            dto.setEmail(student.getUser().getEmail());
+            dto.setRole(student.getUser().getRole());
+        }
+
         dto.setFirstName(student.getFirstName());
         dto.setLastName(student.getLastName());
         dto.setDateOfBirth(student.getDateOfBirth());
         dto.setGender(student.getGender());
         dto.setPhoneNumber(student.getPhoneNumber());
-        dto.setAddress(student.getAddress());
+
+        // --- FIX START: Map all granular address fields ---
+        dto.setAddressLine1(student.getAddressLine1());
+        dto.setCity(student.getCity());
+        dto.setState(student.getState());
+        dto.setPincode(student.getPincode());
+        dto.setCountry(student.getCountry());
+        // --- FIX END ---
+
         dto.setProfileImageUrl(student.getProfileImageUrl());
         dto.setEnrollmentDate(student.getEnrollmentDate());
         dto.setGrade(student.getGrade());
-        dto.setRole(student.getUser().getRole());
-        // --- MODIFIED: classId (singular) ---
-        dto.setClassId(student.getClazz() != null ? student.getClazz().getId() : null);
+        dto.setRollNumber(student.getRollNumber()); // Added from previous StudentDto conversion
 
-        // --- ADDED: Populate subjectIds for StudentDto ---
+        // --- FIX START: Map Parent Details ---
+        dto.setFatherName(student.getFatherName());
+        dto.setMotherName(student.getMotherName());
+        dto.setFatherMobileNumber(student.getFatherMobileNumber());
+        dto.setMotherMobileNumber(student.getMotherMobileNumber());
+        dto.setLocalMobileNumber(student.getLocalMobileNumber());
+        // --- FIX END ---
+
+        // --- FIX START: Map More Student Details ---
+        dto.setStudentHindiName(student.getStudentHindiName());
+        dto.setReligion(student.getReligion());
+        dto.setNationality(student.getNationality());
+        dto.setCategory(student.getCategory());
+        dto.setPhysicalHandicapped(student.getPhysicalHandicapped());
+        // --- FIX END ---
+
+
+        dto.setClassId(student.getClazz() != null ? student.getClazz().getId() : null);
         dto.setSubjectIds(student.getSubjects().stream()
                 .map(Subject::getId)
                 .collect(Collectors.toList()));
-        // --- END ADDED ---
         return dto;
     }
 

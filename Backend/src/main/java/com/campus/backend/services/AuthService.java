@@ -97,7 +97,7 @@ public class AuthService {
         passwordResetTokenRepository.save(resetToken);
 
         // TODO: Replace with your actual frontend URL
-        String resetLink = "http://localhost:3000/reset-password?token=" + token; // Example frontend URL
+        String resetLink = "http://localhost:5173/reset-password?token=" + token; // Example frontend URL
 
         String subject = "Password Reset Request";
         String body = "Dear " + user.getUsername() + ",\n\n" +

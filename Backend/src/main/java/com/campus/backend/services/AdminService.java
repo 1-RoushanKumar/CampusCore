@@ -249,9 +249,28 @@ public class AdminService {
         student.setDateOfBirth(studentDto.getDateOfBirth());
         student.setGender(studentDto.getGender());
         student.setPhoneNumber(studentDto.getPhoneNumber());
-        student.setAddress(studentDto.getAddress());
+        student.setAddressLine1(studentDto.getAddressLine1());
         student.setEnrollmentDate(studentDto.getEnrollmentDate());
         student.setGrade(studentDto.getGrade());
+        student.setCity(studentDto.getCity());
+        student.setState(studentDto.getState());
+        student.setPincode(studentDto.getPincode());
+        student.setCountry(studentDto.getCountry());
+
+        student.setFatherName(studentDto.getFatherName());
+        student.setMotherName(studentDto.getMotherName());
+        student.setFatherMobileNumber(studentDto.getFatherMobileNumber());
+        student.setMotherMobileNumber(studentDto.getMotherMobileNumber());
+        student.setLocalMobileNumber(studentDto.getLocalMobileNumber());
+
+        student.setStudentHindiName(studentDto.getStudentHindiName());
+        student.setReligion(studentDto.getReligion());
+        student.setNationality(studentDto.getNationality());
+        student.setCategory(studentDto.getCategory());
+        student.setPhysicalHandicapped(studentDto.getPhysicalHandicapped());
+        student.setRollNumber(studentDto.getRollNumber());
+        student.setGrade(studentDto.getGrade());
+
 
         if (studentDto.getProfileImageUrl() != null && !studentDto.getProfileImageUrl().isEmpty()) {
             student.setProfileImageUrl(studentDto.getProfileImageUrl());
@@ -309,8 +328,26 @@ public class AdminService {
         existingStudent.setDateOfBirth(studentDto.getDateOfBirth());
         existingStudent.setGender(studentDto.getGender());
         existingStudent.setPhoneNumber(studentDto.getPhoneNumber());
-        existingStudent.setAddress(studentDto.getAddress());
+        existingStudent.setAddressLine1(studentDto.getAddressLine1());
         existingStudent.setEnrollmentDate(studentDto.getEnrollmentDate());
+        existingStudent.setCity(studentDto.getCity());
+        existingStudent.setState(studentDto.getState());
+        existingStudent.setPincode(studentDto.getPincode());
+        existingStudent.setCountry(studentDto.getCountry());
+
+        existingStudent.setFatherName(studentDto.getFatherName());
+        existingStudent.setMotherName(studentDto.getMotherName());
+        existingStudent.setFatherMobileNumber(studentDto.getFatherMobileNumber());
+        existingStudent.setMotherMobileNumber(studentDto.getMotherMobileNumber());
+        existingStudent.setLocalMobileNumber(studentDto.getLocalMobileNumber());
+
+        existingStudent.setStudentHindiName(studentDto.getStudentHindiName());
+        existingStudent.setReligion(studentDto.getReligion());
+        existingStudent.setNationality(studentDto.getNationality());
+        existingStudent.setCategory(studentDto.getCategory());
+        existingStudent.setPhysicalHandicapped(studentDto.getPhysicalHandicapped());
+        existingStudent.setRollNumber(studentDto.getRollNumber());
+
         existingStudent.setGrade(studentDto.getGrade());
 
         if (studentDto.getProfileImageUrl() != null && !studentDto.getProfileImageUrl().isEmpty()) {
@@ -663,20 +700,51 @@ public class AdminService {
         dto.setId(student.getId());
         dto.setUsername(student.getUser().getUsername());
         dto.setEmail(student.getUser().getEmail());
+        // Password is not typically returned in DTOs for security reasons
+        // dto.setPassword(null); // Explicitly set to null or omit from conversion
+
         dto.setFirstName(student.getFirstName());
         dto.setLastName(student.getLastName());
         dto.setDateOfBirth(student.getDateOfBirth());
         dto.setGender(student.getGender());
         dto.setPhoneNumber(student.getPhoneNumber());
-        dto.setAddress(student.getAddress());
+
+        // --- NEW/UPDATED: Address Details ---
+        dto.setAddressLine1(student.getAddressLine1()); // Correctly map addressLine1
+        dto.setCity(student.getCity());
+        dto.setState(student.getState());
+        dto.setPincode(student.getPincode());
+        dto.setCountry(student.getCountry());
+
         dto.setProfileImageUrl(student.getProfileImageUrl());
         dto.setEnrollmentDate(student.getEnrollmentDate());
         dto.setGrade(student.getGrade());
-        dto.setRole(student.getUser().getRole());
-        dto.setClassId(student.getClazz() != null ? student.getClazz().getId() : null);
+        dto.setRole(student.getUser().getRole()); // Get role from User entity
+
+        if (student.getClazz() != null) {
+            dto.setClassId(student.getClazz().getId());
+        }
+
+        // --- NEW: Parent Details ---
+        dto.setFatherName(student.getFatherName());
+        dto.setMotherName(student.getMotherName());
+        dto.setFatherMobileNumber(student.getFatherMobileNumber());
+        dto.setMotherMobileNumber(student.getMotherMobileNumber());
+        dto.setLocalMobileNumber(student.getLocalMobileNumber());
+
+        // --- NEW: More Student Details ---
+        dto.setStudentHindiName(student.getStudentHindiName());
+        dto.setReligion(student.getReligion());
+        dto.setNationality(student.getNationality());
+        dto.setCategory(student.getCategory());
+        dto.setPhysicalHandicapped(student.getPhysicalHandicapped());
+        dto.setRollNumber(student.getRollNumber()); // Map the generated roll number
+
         dto.setSubjectIds(student.getSubjects().stream()
                 .map(Subject::getId)
                 .collect(Collectors.toList()));
+
+        // Age will be calculated by the DTO's getter method, no need to set here
         return dto;
     }
 

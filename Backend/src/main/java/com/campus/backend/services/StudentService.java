@@ -3,7 +3,7 @@ package com.campus.backend.services;
 import com.campus.backend.dtos.ClassDto;
 import com.campus.backend.dtos.FeedbackDto;
 import com.campus.backend.dtos.StudentDto;
-import com.campus.backend.dtos.SubjectDto; // Import SubjectDto
+import com.campus.backend.dtos.SubjectDto;
 import com.campus.backend.entity.Feedback;
 import com.campus.backend.entity.Student;
 import com.campus.backend.entity.User;
@@ -87,18 +87,47 @@ public class StudentService {
     private StudentDto convertToStudentDto(Student student) {
         StudentDto dto = new StudentDto();
         dto.setId(student.getId());
-        dto.setUsername(student.getUser().getUsername());
-        dto.setEmail(student.getUser().getEmail());
+        // User details
+        if (student.getUser() != null) {
+            dto.setUsername(student.getUser().getUsername());
+            dto.setEmail(student.getUser().getEmail());
+            dto.setRole(student.getUser().getRole());
+        }
+
         dto.setFirstName(student.getFirstName());
         dto.setLastName(student.getLastName());
         dto.setDateOfBirth(student.getDateOfBirth());
         dto.setGender(student.getGender());
         dto.setPhoneNumber(student.getPhoneNumber());
-        dto.setAddress(student.getAddress());
+
+        // --- UPDATED: Address Fields ---
+        // Removed: dto.setAddress(student.getAddress());
+        dto.setAddressLine1(student.getAddressLine1());
+        dto.setCity(student.getCity());
+        dto.setState(student.getState());
+        dto.setPincode(student.getPincode());
+        dto.setCountry(student.getCountry());
+
         dto.setProfileImageUrl(student.getProfileImageUrl());
         dto.setEnrollmentDate(student.getEnrollmentDate());
         dto.setGrade(student.getGrade());
-        dto.setRole(student.getUser().getRole());
+        dto.setRollNumber(student.getRollNumber()); // Add Roll Number
+
+        // --- NEW: Parent Details ---
+        dto.setFatherName(student.getFatherName());
+        dto.setMotherName(student.getMotherName());
+        dto.setFatherMobileNumber(student.getFatherMobileNumber());
+        dto.setMotherMobileNumber(student.getMotherMobileNumber());
+        dto.setLocalMobileNumber(student.getLocalMobileNumber());
+
+        // --- NEW: More Student Details ---
+        dto.setStudentHindiName(student.getStudentHindiName());
+        dto.setReligion(student.getReligion());
+        dto.setNationality(student.getNationality());
+        dto.setCategory(student.getCategory());
+        dto.setPhysicalHandicapped(student.getPhysicalHandicapped());
+
+
         dto.setClassId(student.getClazz() != null ? student.getClazz().getId() : null);
         dto.setSubjectIds(student.getSubjects().stream()
                 .map(Subject::getId)
