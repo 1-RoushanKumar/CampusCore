@@ -44,7 +44,9 @@ public class SecurityConfig {
                         .requestMatchers("/api/uploads/**").permitAll()
                         .requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
                         .requestMatchers("/api/auth/forgot-password/request", "/api/auth/forgot-password/reset").permitAll()
-                        .anyRequest().authenticated())
+                        .requestMatchers("/api/public/news/**").permitAll() // ✅ ADD THIS LINE
+                        .anyRequest().authenticated()
+                )
                 .exceptionHandling(ex -> ex.authenticationEntryPoint(point))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
