@@ -12,12 +12,13 @@ import Home from "./pages/Home";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
 import Login from "./pages/Login";
-import Dashboard from "./pages/Dashboard";
 import AdminDashboard from "./pages/AdminDashboard";
 import EducatorDashboard from "./pages/EducatorDashboard";
 import StudentDashboard from "./pages/StudentDashboard";
 import ResetPassword from "./pages/ResetPassword";
-import NewsDetailPage from "./pages/NewsDetailPage.jsx"; // <--- IMPORT THIS LINE
+import NewsDetailPage from "./pages/NewsDetailPage.jsx";
+import TermsOfService from "./pages/TermsOfService.jsx";
+import PrivacyPolicy from "./pages/PrivacyPolicy.jsx"; // <--- IMPORT THIS LINE
 
 // A more robust private route component with role checking
 const PrivateRoute = ({children, allowedRoles}) => {
@@ -47,16 +48,10 @@ const App = () => {
                         <Route path="/contact" element={<Contact/>}/>
                         <Route path="/login" element={<Login/>}/>
                         <Route path="/reset-password" element={<ResetPassword/>}/>
-                        <Route path="/news/:id" element={<NewsDetailPage/>}/>{" "}
+                        <Route path="/news/:id" element={<NewsDetailPage/>}/>
+                        <Route path="/terms-of-service" element={<TermsOfService/>}/>
+                        <Route path="/privacy-policy" element={<PrivacyPolicy/>}/>
                         {/* <--- ADD THIS ROUTE */}
-                        <Route
-                            path="/dashboard"
-                            element={
-                                <PrivateRoute>
-                                    <Dashboard/>
-                                </PrivateRoute>
-                            }
-                        />
                         <Route
                             path="/admin/dashboard"
                             element={

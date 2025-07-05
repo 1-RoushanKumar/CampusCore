@@ -10,7 +10,7 @@ import {
     faBook,
     faBuilding,
     faChartLine,
-    faNewspaper // Ensure this is imported
+    faNewspaper
 } from '@fortawesome/free-solid-svg-icons';
 import api from '../services/api';
 import NewsManagement from "../components/admin/NewsManagment.jsx";
@@ -22,7 +22,7 @@ const AdminDashboard = () => {
         totalEducators: 0,
         totalSubjects: 0,
         totalClasses: 0,
-        totalPublishedNews: 0, // <--- ADD THIS LINE
+        totalPublishedNews: 0,
     });
     const [loadingOverview, setLoadingOverview] = useState(true);
     const [overviewError, setOverviewError] = useState('');
@@ -38,13 +38,13 @@ const AdminDashboard = () => {
                     educatorsCountResponse,
                     subjectsCountResponse,
                     classesCountResponse,
-                    publishedNewsCountResponse, // <--- ADD THIS LINE
+                    publishedNewsCountResponse,
                 ] = await Promise.all([
-                    api.get("/admin/students/count"), // Updated endpoint based on AdminStatsController
-                    api.get("/admin/educators/count"), // Updated endpoint
-                    api.get("/admin/subjects/count"), // Updated endpoint
-                    api.get("/admin/classes/count"), // Updated endpoint
-                    api.get("/admin/news/published/count"), // <--- NEW ENDPOINT FOR NEWS COUNT
+                    api.get("/admin/students/count"),
+                    api.get("/admin/educators/count"),
+                    api.get("/admin/subjects/count"),
+                    api.get("/admin/classes/count"),
+                    api.get("/admin/news/published/count"),
                 ]);
 
                 setDashboardData({
@@ -52,7 +52,7 @@ const AdminDashboard = () => {
                     totalEducators: educatorsCountResponse.data,
                     totalSubjects: subjectsCountResponse.data,
                     totalClasses: classesCountResponse.data,
-                    totalPublishedNews: publishedNewsCountResponse.data, // <--- SET NEWS COUNT
+                    totalPublishedNews: publishedNewsCountResponse.data,
                 });
             } catch (err) {
                 console.error("Error fetching dashboard overview data:", err);
@@ -62,7 +62,7 @@ const AdminDashboard = () => {
                     totalEducators: 'N/A',
                     totalSubjects: 'N/A',
                     totalClasses: 'N/A',
-                    totalPublishedNews: 'N/A', // <--- SET TO N/A ON ERROR
+                    totalPublishedNews: 'N/A',
                 });
             } finally {
                 setLoadingOverview(false);
@@ -76,150 +76,169 @@ const AdminDashboard = () => {
 
     // Dashboard Overview component that displays dynamic data
     const DashboardOverview = () => (
-        <div>
+        <div className="space-y-8">
             {loadingOverview ? (
-                <div className="text-center py-8 text-blue-600 text-xl">Loading overview data...</div>
+                <div className="flex flex-col items-center justify-center py-16 space-y-4">
+                    <div
+                        className="animate-spin rounded-full h-16 w-16 border-4 border-blue-500 border-t-transparent"></div>
+                    <div className="text-xl text-gray-600 font-medium">Loading overview data...</div>
+                </div>
             ) : overviewError ? (
-                <div className="text-center py-8 text-red-600 text-xl font-semibold">Error: {overviewError}</div>
+                <div className="flex flex-col items-center justify-center py-16 space-y-4">
+                    <div className="bg-red-50 border border-red-200 rounded-xl p-6 max-w-md text-center">
+                        <div className="text-red-600 text-lg font-semibold mb-2">Error Loading Data</div>
+                        <div className="text-red-500">{overviewError}</div>
+                    </div>
+                </div>
             ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                     <div
-                        className="bg-white p-6 rounded-lg shadow-md border border-blue-200 flex items-center space-x-4">
-                        <FontAwesomeIcon icon={faUsers} className="text-blue-600 text-4xl"/>
-                        <div>
-                            <h3 className="text-xl font-semibold text-gray-800">Total Students</h3>
-                            <p className="text-3xl font-bold text-blue-700">{dashboardData.totalStudents}</p>
+                        className="group bg-gradient-to-br from-blue-50 to-blue-100 hover:from-blue-100 hover:to-blue-200 p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border border-blue-200/50">
+                        <div className="flex items-center space-x-6">
+                            <div
+                                className="bg-blue-500 text-white p-4 rounded-xl shadow-md group-hover:scale-110 transition-transform duration-300">
+                                <FontAwesomeIcon icon={faUsers} className="text-2xl"/>
+                            </div>
+                            <div>
+                                <h3 className="text-lg font-semibold text-gray-700 mb-1">Total Students</h3>
+                                <p className="text-4xl font-bold text-blue-700">{dashboardData.totalStudents}</p>
+                            </div>
                         </div>
                     </div>
+
                     <div
-                        className="bg-white p-6 rounded-lg shadow-md border border-green-200 flex items-center space-x-4">
-                        <FontAwesomeIcon icon={faChalkboardTeacher} className="text-green-600 text-4xl"/>
-                        <div>
-                            <h3 className="text-xl font-semibold text-gray-800">Total Educators</h3>
-                            <p className="text-3xl font-bold text-green-700">{dashboardData.totalEducators}</p>
+                        className="group bg-gradient-to-br from-green-50 to-green-100 hover:from-green-100 hover:to-green-200 p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border border-green-200/50">
+                        <div className="flex items-center space-x-6">
+                            <div
+                                className="bg-green-500 text-white p-4 rounded-xl shadow-md group-hover:scale-110 transition-transform duration-300">
+                                <FontAwesomeIcon icon={faChalkboardTeacher} className="text-2xl"/>
+                            </div>
+                            <div>
+                                <h3 className="text-lg font-semibold text-gray-700 mb-1">Total Educators</h3>
+                                <p className="text-4xl font-bold text-green-700">{dashboardData.totalEducators}</p>
+                            </div>
                         </div>
                     </div>
+
                     <div
-                        className="bg-white p-6 rounded-lg shadow-md border border-purple-200 flex items-center space-x-4">
-                        <FontAwesomeIcon icon={faBook} className="text-purple-600 text-4xl"/>
-                        <div>
-                            <h3 className="text-xl font-semibold text-gray-800">Total Subjects</h3>
-                            <p className="text-3xl font-bold text-purple-700">{dashboardData.totalSubjects}</p>
+                        className="group bg-gradient-to-br from-purple-50 to-purple-100 hover:from-purple-100 hover:to-purple-200 p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border border-purple-200/50">
+                        <div className="flex items-center space-x-6">
+                            <div
+                                className="bg-purple-500 text-white p-4 rounded-xl shadow-md group-hover:scale-110 transition-transform duration-300">
+                                <FontAwesomeIcon icon={faBook} className="text-2xl"/>
+                            </div>
+                            <div>
+                                <h3 className="text-lg font-semibold text-gray-700 mb-1">Total Subjects</h3>
+                                <p className="text-4xl font-bold text-purple-700">{dashboardData.totalSubjects}</p>
+                            </div>
                         </div>
                     </div>
+
                     <div
-                        className="bg-white p-6 rounded-lg shadow-md border border-yellow-200 flex items-center space-x-4">
-                        <FontAwesomeIcon icon={faBuilding} className="text-yellow-600 text-4xl"/>
-                        <div>
-                            <h3 className="text-xl font-semibold text-gray-800">Total Classes</h3>
-                            <p className="text-3xl font-bold text-yellow-700">{dashboardData.totalClasses}</p>
+                        className="group bg-gradient-to-br from-yellow-50 to-yellow-100 hover:from-yellow-100 hover:to-yellow-200 p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border border-yellow-200/50">
+                        <div className="flex items-center space-x-6">
+                            <div
+                                className="bg-yellow-500 text-white p-4 rounded-xl shadow-md group-hover:scale-110 transition-transform duration-300">
+                                <FontAwesomeIcon icon={faBuilding} className="text-2xl"/>
+                            </div>
+                            <div>
+                                <h3 className="text-lg font-semibold text-gray-700 mb-1">Total Classes</h3>
+                                <p className="text-4xl font-bold text-yellow-700">{dashboardData.totalClasses}</p>
+                            </div>
                         </div>
                     </div>
-                    {/* NEW CARD FOR PUBLISHED NEWS */}
+
                     <div
-                        className="bg-white p-6 rounded-lg shadow-md border border-pink-200 flex items-center space-x-4">
-                        <FontAwesomeIcon icon={faNewspaper} className="text-pink-600 text-4xl"/>
-                        <div>
-                            <h3 className="text-xl font-semibold text-gray-800">Published News</h3>
-                            <p className="text-3xl font-bold text-pink-700">{dashboardData.totalPublishedNews}</p>
+                        className="group bg-gradient-to-br from-pink-50 to-pink-100 hover:from-pink-100 hover:to-pink-200 p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border border-pink-200/50">
+                        <div className="flex items-center space-x-6">
+                            <div
+                                className="bg-pink-500 text-white p-4 rounded-xl shadow-md group-hover:scale-110 transition-transform duration-300">
+                                <FontAwesomeIcon icon={faNewspaper} className="text-2xl"/>
+                            </div>
+                            <div>
+                                <h3 className="text-lg font-semibold text-gray-700 mb-1">Published News</h3>
+                                <p className="text-4xl font-bold text-pink-700">{dashboardData.totalPublishedNews}</p>
+                            </div>
                         </div>
                     </div>
-                    {/* Add more overview cards/charts as needed */}
                 </div>
             )}
         </div>
     );
 
+    const navigationItems = [
+        {id: "overview", label: "Overview", icon: faChartLine},
+        {id: "students", label: "Manage Students", icon: faUsers},
+        {id: "educators", label: "Manage Educators", icon: faChalkboardTeacher},
+        {id: "subjects", label: "Manage Subjects", icon: faBook},
+        {id: "classes", label: "Manage Classes", icon: faBuilding},
+        {id: "news", label: "Manage News", icon: faNewspaper}
+    ];
+
+    const getPageTitle = () => {
+        const titles = {
+            overview: "Dashboard Overview",
+            students: "Learner Console",
+            educators: "Instructor Console",
+            subjects: "Curriculum Console",
+            classes: "ClassRoom Console",
+            news: "Announcement Console"
+        };
+        return titles[activeTab] || "Dashboard";
+    };
 
     return (
-        <div className="flex flex-col md:flex-row min-h-[calc(100vh-80px)] bg-gray-100">
+        <div
+            className="flex flex-col lg:flex-row min-h-[calc(100vh-80px)] bg-gradient-to-br from-gray-50 via-white to-gray-100">
             {/* Sidebar Navigation */}
-            <aside className="w-full md:w-64 bg-gray-800 text-white p-4 shadow-xl">
-                <h2 className="text-2xl font-bold mb-6 border-b border-gray-700 pb-3">Admin Panel</h2>
-                <nav>
-                    <ul>
-                        <li className="mb-2">
-                            <button
-                                onClick={() => setActiveTab("overview")}
-                                className={`w-full text-left py-2 px-4 rounded-lg transition duration-200 flex items-center ${
-                                    activeTab === "overview" ? "bg-blue-600 text-white shadow-md" : "hover:bg-gray-700 text-gray-300"
+            <aside className="w-full lg:w-72 bg-gradient-to-b from-slate-800 to-slate-900 text-white shadow-2xl">
+                <div className="p-6 border-b border-slate-700">
+                    <h2 className="text-2xl font-bold text-transparent bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text">
+                        Admin Panel
+                    </h2>
+                </div>
+                <nav className="p-4 space-y-2">
+                    {navigationItems.map((item) => (
+                        <button
+                            key={item.id}
+                            onClick={() => setActiveTab(item.id)}
+                            className={`w-full text-left py-3 px-4 rounded-xl transition-all duration-200 flex items-center space-x-3 group ${
+                                activeTab === item.id
+                                    ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg shadow-blue-500/25 transform scale-105"
+                                    : "hover:bg-slate-700 text-gray-300 hover:text-white hover:transform hover:scale-105"
+                            }`}
+                        >
+                            <FontAwesomeIcon
+                                icon={item.icon}
+                                className={`text-lg transition-colors duration-200 ${
+                                    activeTab === item.id ? "text-white" : "text-gray-400 group-hover:text-blue-400"
                                 }`}
-                            >
-                                <FontAwesomeIcon icon={faChartLine} className="mr-3"/> Overview
-                            </button>
-                        </li>
-                        <li className="mb-2">
-                            <button
-                                onClick={() => setActiveTab("students")}
-                                className={`w-full text-left py-2 px-4 rounded-lg transition duration-200 flex items-center ${
-                                    activeTab === "students" ? "bg-blue-600 text-white shadow-md" : "hover:bg-gray-700 text-gray-300"
-                                }`}
-                            >
-                                <FontAwesomeIcon icon={faUsers} className="mr-3"/> Manage Students
-                            </button>
-                        </li>
-                        <li className="mb-2">
-                            <button
-                                onClick={() => setActiveTab("educators")}
-                                className={`w-full text-left py-2 px-4 rounded-lg transition duration-200 flex items-center ${
-                                    activeTab === "educators" ? "bg-blue-600 text-white shadow-md" : "hover:bg-gray-700 text-gray-300"
-                                }`}
-                            >
-                                <FontAwesomeIcon icon={faChalkboardTeacher} className="mr-3"/> Manage Educators
-                            </button>
-                        </li>
-                        <li className="mb-2">
-                            <button
-                                onClick={() => setActiveTab("subjects")}
-                                className={`w-full text-left py-2 px-4 rounded-lg transition duration-200 flex items-center ${
-                                    activeTab === "subjects" ? "bg-blue-600 text-white shadow-md" : "hover:bg-gray-700 text-gray-300"
-                                }`}
-                            >
-                                <FontAwesomeIcon icon={faBook} className="mr-3"/> Manage Subjects
-                            </button>
-                        </li>
-                        <li className="mb-2">
-                            <button
-                                onClick={() => setActiveTab("classes")}
-                                className={`w-full text-left py-2 px-4 rounded-lg transition duration-200 flex items-center ${
-                                    activeTab === "classes" ? "bg-blue-600 text-white shadow-md" : "hover:bg-gray-700 text-gray-300"
-                                }`}
-                            >
-                                <FontAwesomeIcon icon={faBuilding} className="mr-3"/> Manage Classes
-                            </button>
-                        </li>
-                        <li className="mb-2">
-                            <button
-                                onClick={() => setActiveTab("news")}
-                                className={`w-full text-left py-2 px-4 rounded-lg transition duration-200 flex items-center ${
-                                    activeTab === "news" ? "bg-blue-600 text-white shadow-md" : "hover:bg-gray-700 text-gray-300"
-                                }`}
-                            >
-                                <FontAwesomeIcon icon={faNewspaper} className="mr-3"/> Manage News
-                            </button>
-                        </li>
-                        {/* Add more navigation items as needed */}
-                    </ul>
+                            />
+                            <span className="font-medium">{item.label}</span>
+                        </button>
+                    ))}
                 </nav>
             </aside>
 
             {/* Main Content Area */}
-            <div className="flex-1 p-8 bg-gray-50">
-                <h1 className="text-4xl font-extrabold text-gray-900 mb-8 border-b pb-4">
-                    {activeTab === "overview" && "Dashboard Overview"}
-                    {activeTab === "students" && "Student Management"}
-                    {activeTab === "educators" && "Educator Management"}
-                    {activeTab === "subjects" && "Subject Management"}
-                    {activeTab === "classes" && "Class Management"}
-                    {activeTab === "news" && "News Management"}
-                </h1>
+            <div className="flex-1 p-8 lg:p-12 bg-white/80 backdrop-blur-sm">
+                <div className="max-w-7xl mx-auto">
+                    <div className="mb-8">
+                        <h1 className="text-4xl lg:text-5xl font-bold text-transparent bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text mb-2">
+                            {getPageTitle()}
+                        </h1>
+                        <div className="h-1 w-24 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full"></div>
+                    </div>
 
-                {activeTab === "overview" && <DashboardOverview/>}
-                {activeTab === "students" && <StudentManagement/>}
-                {activeTab === "educators" && <EducatorManagement/>}
-                {activeTab === "subjects" && <SubjectManagement/>}
-                {activeTab === "classes" && <ClassManagement/>}
-                {activeTab === "news" && <NewsManagement/>}
+                    <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-xl border border-gray-200/50 p-8">
+                        {activeTab === "overview" && <DashboardOverview/>}
+                        {activeTab === "students" && <StudentManagement/>}
+                        {activeTab === "educators" && <EducatorManagement/>}
+                        {activeTab === "subjects" && <SubjectManagement/>}
+                        {activeTab === "classes" && <ClassManagement/>}
+                        {activeTab === "news" && <NewsManagement/>}
+                    </div>
+                </div>
             </div>
         </div>
     );

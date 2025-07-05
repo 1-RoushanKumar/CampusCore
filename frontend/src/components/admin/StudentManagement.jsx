@@ -8,14 +8,6 @@ import {
     faPlus,
     faEye,
     faEraser, // Added for "Clear Image"
-    faHome, // For address fields
-    faChild, // For parent details
-    faPray, // For religion
-    faGlobe, // For nationality
-    faTags, // For category
-    faWheelchair, // For physical handicapped
-    faIdBadge, // For Roll Number
-    faPhone, // For phone numbers
 } from "@fortawesome/free-solid-svg-icons";
 import Modal from "../common/Modal"; // A simple Modal component (create this if you don't have one)
 
@@ -524,177 +516,203 @@ const StudentManagement = () => {
                 onClose={() => setIsModalOpen(false)}
                 title={currentStudent ? "Edit Student" : "Add New Student"}
             >
-                <form onSubmit={handleSubmit} className="space-y-5">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {/* User Details */}
-                        <div>
-                            <label
-                                htmlFor="username"
-                                className="block text-sm font-medium text-gray-700"
-                            >
-                                Username
-                            </label>
-                            <input
-                                type="text"
-                                id="username"
-                                name="username"
-                                value={formData.username}
-                                onChange={handleChange}
-                                required
-                                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2.5 focus:ring-blue-500 focus:border-blue-500"
-                            />
+                <form onSubmit={handleSubmit} className="space-y-8">
+                    {/* Account Information Section */}
+                    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-6 border border-blue-200">
+                        <div className="flex items-center mb-6">
+                            <div className="bg-blue-500 p-3 rounded-xl">
+                                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor"
+                                     viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                                          d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                                </svg>
+                            </div>
+                            <h3 className="text-xl font-bold text-gray-800 ml-4">Account Information</h3>
                         </div>
-                        {!currentStudent && ( // Password field only for new student creation
-                            <div>
-                                <label
-                                    htmlFor="password"
-                                    className="block text-sm font-medium text-gray-700"
-                                >
-                                    Password
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="space-y-2">
+                                <label htmlFor="username" className="block text-sm font-semibold text-gray-700">
+                                    Username <span className="text-red-500">*</span>
                                 </label>
                                 <input
-                                    type="password"
-                                    id="password"
-                                    name="password"
-                                    value={formData.password}
+                                    type="text"
+                                    id="username"
+                                    name="username"
+                                    value={formData.username}
                                     onChange={handleChange}
-                                    required={!currentStudent}
-                                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2.5 focus:ring-blue-500 focus:border-blue-500"
+                                    required
+                                    className="w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white/80 backdrop-blur-sm"
+                                    placeholder="Enter username"
                                 />
                             </div>
-                        )}
-                        <div>
-                            <label
-                                htmlFor="email"
-                                className="block text-sm font-medium text-gray-700"
-                            >
-                                Email
-                            </label>
-                            <input
-                                type="email"
-                                id="email"
-                                name="email"
-                                value={formData.email}
-                                onChange={handleChange}
-                                required
-                                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2.5 focus:ring-blue-500 focus:border-blue-500"
-                            />
+
+                            {!currentStudent && (
+                                <div className="space-y-2">
+                                    <label htmlFor="password" className="block text-sm font-semibold text-gray-700">
+                                        Password <span className="text-red-500">*</span>
+                                    </label>
+                                    <input
+                                        type="password"
+                                        id="password"
+                                        name="password"
+                                        value={formData.password}
+                                        onChange={handleChange}
+                                        required={!currentStudent}
+                                        className="w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white/80 backdrop-blur-sm"
+                                        placeholder="Enter password"
+                                    />
+                                </div>
+                            )}
+
+                            <div className="space-y-2">
+                                <label htmlFor="email" className="block text-sm font-semibold text-gray-700">
+                                    Email Address <span className="text-red-500">*</span>
+                                </label>
+                                <input
+                                    type="email"
+                                    id="email"
+                                    name="email"
+                                    value={formData.email}
+                                    onChange={handleChange}
+                                    required
+                                    className="w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white/80 backdrop-blur-sm"
+                                    placeholder="Enter email address"
+                                />
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Personal Information Section */}
+                    <div
+                        className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl p-6 border border-green-200">
+                        <div className="flex items-center mb-6">
+                            <div className="bg-green-500 p-3 rounded-xl">
+                                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor"
+                                     viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                                          d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                            </div>
+                            <h3 className="text-xl font-bold text-gray-800 ml-4">Personal Information</h3>
                         </div>
 
-                        {/* Basic Student Details */}
-                        <div>
-                            <label
-                                htmlFor="firstName"
-                                className="block text-sm font-medium text-gray-700"
-                            >
-                                First Name
-                            </label>
-                            <input
-                                type="text"
-                                id="firstName"
-                                name="firstName"
-                                value={formData.firstName}
-                                onChange={handleChange}
-                                required
-                                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2.5 focus:ring-blue-500 focus:border-blue-500"
-                            />
-                        </div>
-                        <div>
-                            <label
-                                htmlFor="lastName"
-                                className="block text-sm font-medium text-gray-700"
-                            >
-                                Last Name
-                            </label>
-                            <input
-                                type="text"
-                                id="lastName"
-                                name="lastName"
-                                value={formData.lastName}
-                                onChange={handleChange}
-                                required
-                                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2.5 focus:ring-blue-500 focus:border-blue-500"
-                            />
-                        </div>
-                        <div>
-                            <label
-                                htmlFor="studentHindiName"
-                                className="block text-sm font-medium text-gray-700"
-                            >
-                                Student Name (Hindi)
-                            </label>
-                            <input
-                                type="text"
-                                id="studentHindiName"
-                                name="studentHindiName"
-                                value={formData.studentHindiName}
-                                onChange={handleChange}
-                                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2.5 focus:ring-blue-500 focus:border-blue-500"
-                            />
-                        </div>
-                        <div>
-                            <label
-                                htmlFor="dateOfBirth"
-                                className="block text-sm font-medium text-gray-700"
-                            >
-                                Date of Birth
-                            </label>
-                            <input
-                                type="date"
-                                id="dateOfBirth"
-                                name="dateOfBirth"
-                                value={formData.dateOfBirth}
-                                onChange={handleChange}
-                                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2.5 focus:ring-blue-500 focus:border-blue-500"
-                            />
-                        </div>
-                        <div>
-                            <label
-                                htmlFor="gender"
-                                className="block text-sm font-medium text-gray-700"
-                            >
-                                Gender
-                            </label>
-                            <select
-                                id="gender"
-                                name="gender"
-                                value={formData.gender}
-                                onChange={handleChange}
-                                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2.5 focus:ring-blue-500 focus:border-blue-500"
-                            >
-                                <option value="">Select Gender</option>
-                                <option value="Male">Male</option>
-                                <option value="Female">Female</option>
-                                <option value="Other">Other</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label
-                                htmlFor="phoneNumber"
-                                className="block text-sm font-medium text-gray-700"
-                            >
-                                Student Phone Number
-                            </label>
-                            <input
-                                type="text"
-                                id="phoneNumber"
-                                name="phoneNumber"
-                                value={formData.phoneNumber}
-                                onChange={handleChange}
-                                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2.5 focus:ring-blue-500 focus:border-blue-500"
-                            />
-                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="space-y-2">
+                                <label htmlFor="firstName" className="block text-sm font-semibold text-gray-700">
+                                    First Name <span className="text-red-500">*</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    id="firstName"
+                                    name="firstName"
+                                    value={formData.firstName}
+                                    onChange={handleChange}
+                                    required
+                                    className="w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 bg-white/80 backdrop-blur-sm"
+                                    placeholder="Enter first name"
+                                />
+                            </div>
 
-                        {/* Address Details */}
-                        <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4 border-t pt-4 mt-4">
-                            <h3 className="text-lg font-semibold text-gray-800 col-span-full mb-2">
-                                Address Details
-                            </h3>
-                            <div>
-                                <label
-                                    htmlFor="addressLine1"
-                                    className="block text-sm font-medium text-gray-700"
+                            <div className="space-y-2">
+                                <label htmlFor="lastName" className="block text-sm font-semibold text-gray-700">
+                                    Last Name <span className="text-red-500">*</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    id="lastName"
+                                    name="lastName"
+                                    value={formData.lastName}
+                                    onChange={handleChange}
+                                    required
+                                    className="w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 bg-white/80 backdrop-blur-sm"
+                                    placeholder="Enter last name"
+                                />
+                            </div>
+
+                            <div className="space-y-2">
+                                <label htmlFor="studentHindiName" className="block text-sm font-semibold text-gray-700">
+                                    Name in Hindi
+                                </label>
+                                <input
+                                    type="text"
+                                    id="studentHindiName"
+                                    name="studentHindiName"
+                                    value={formData.studentHindiName}
+                                    onChange={handleChange}
+                                    className="w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 bg-white/80 backdrop-blur-sm"
+                                    placeholder="हिंदी में नाम"
+                                />
+                            </div>
+
+                            <div className="space-y-2">
+                                <label htmlFor="dateOfBirth" className="block text-sm font-semibold text-gray-700">
+                                    Date of Birth
+                                </label>
+                                <input
+                                    type="date"
+                                    id="dateOfBirth"
+                                    name="dateOfBirth"
+                                    value={formData.dateOfBirth}
+                                    onChange={handleChange}
+                                    className="w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 bg-white/80 backdrop-blur-sm"
+                                />
+                            </div>
+
+                            <div className="space-y-2">
+                                <label htmlFor="gender" className="block text-sm font-semibold text-gray-700">
+                                    Gender
+                                </label>
+                                <select
+                                    id="gender"
+                                    name="gender"
+                                    value={formData.gender}
+                                    onChange={handleChange}
+                                    className="w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 bg-white/80 backdrop-blur-sm"
                                 >
+                                    <option value="">Select Gender</option>
+                                    <option value="Male">Male</option>
+                                    <option value="Female">Female</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+
+                            <div className="space-y-2">
+                                <label htmlFor="phoneNumber" className="block text-sm font-semibold text-gray-700">
+                                    Phone Number
+                                </label>
+                                <input
+                                    type="text"
+                                    id="phoneNumber"
+                                    name="phoneNumber"
+                                    value={formData.phoneNumber}
+                                    onChange={handleChange}
+                                    className="w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 bg-white/80 backdrop-blur-sm"
+                                    placeholder="Enter phone number"
+                                />
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Address Information Section */}
+                    <div
+                        className="bg-gradient-to-r from-purple-50 to-violet-50 rounded-2xl p-6 border border-purple-200">
+                        <div className="flex items-center mb-6">
+                            <div className="bg-purple-500 p-3 rounded-xl">
+                                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor"
+                                     viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                                          d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                                          d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                </svg>
+                            </div>
+                            <h3 className="text-xl font-bold text-gray-800 ml-4">Address Information</h3>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="md:col-span-2 space-y-2">
+                                <label htmlFor="addressLine1" className="block text-sm font-semibold text-gray-700">
                                     Address Line 1
                                 </label>
                                 <input
@@ -703,14 +721,13 @@ const StudentManagement = () => {
                                     name="addressLine1"
                                     value={formData.addressLine1}
                                     onChange={handleChange}
-                                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2.5 focus:ring-blue-500 focus:border-blue-500"
+                                    className="w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 bg-white/80 backdrop-blur-sm"
+                                    placeholder="Enter full address"
                                 />
                             </div>
-                            <div>
-                                <label
-                                    htmlFor="city"
-                                    className="block text-sm font-medium text-gray-700"
-                                >
+
+                            <div className="space-y-2">
+                                <label htmlFor="city" className="block text-sm font-semibold text-gray-700">
                                     City
                                 </label>
                                 <input
@@ -719,14 +736,13 @@ const StudentManagement = () => {
                                     name="city"
                                     value={formData.city}
                                     onChange={handleChange}
-                                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2.5 focus:ring-blue-500 focus:border-blue-500"
+                                    className="w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 bg-white/80 backdrop-blur-sm"
+                                    placeholder="Enter city"
                                 />
                             </div>
-                            <div>
-                                <label
-                                    htmlFor="state"
-                                    className="block text-sm font-medium text-gray-700"
-                                >
+
+                            <div className="space-y-2">
+                                <label htmlFor="state" className="block text-sm font-semibold text-gray-700">
                                     State
                                 </label>
                                 <input
@@ -735,14 +751,13 @@ const StudentManagement = () => {
                                     name="state"
                                     value={formData.state}
                                     onChange={handleChange}
-                                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2.5 focus:ring-blue-500 focus:border-blue-500"
+                                    className="w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 bg-white/80 backdrop-blur-sm"
+                                    placeholder="Enter state"
                                 />
                             </div>
-                            <div>
-                                <label
-                                    htmlFor="pincode"
-                                    className="block text-sm font-medium text-gray-700"
-                                >
+
+                            <div className="space-y-2">
+                                <label htmlFor="pincode" className="block text-sm font-semibold text-gray-700">
                                     Pincode
                                 </label>
                                 <input
@@ -751,14 +766,13 @@ const StudentManagement = () => {
                                     name="pincode"
                                     value={formData.pincode}
                                     onChange={handleChange}
-                                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2.5 focus:ring-blue-500 focus:border-blue-500"
+                                    className="w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 bg-white/80 backdrop-blur-sm"
+                                    placeholder="Enter pincode"
                                 />
                             </div>
-                            <div className="md:col-span-2">
-                                <label
-                                    htmlFor="country"
-                                    className="block text-sm font-medium text-gray-700"
-                                >
+
+                            <div className="space-y-2">
+                                <label htmlFor="country" className="block text-sm font-semibold text-gray-700">
                                     Country
                                 </label>
                                 <input
@@ -767,100 +781,120 @@ const StudentManagement = () => {
                                     name="country"
                                     value={formData.country}
                                     onChange={handleChange}
-                                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2.5 focus:ring-blue-500 focus:border-blue-500"
+                                    className="w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 bg-white/80 backdrop-blur-sm"
+                                    placeholder="Enter country"
                                 />
                             </div>
                         </div>
+                    </div>
 
-                        {/* Academic Details */}
-                        <div>
-                            <label
-                                htmlFor="grade"
-                                className="block text-sm font-medium text-gray-700"
-                            >
-                                Grade
-                            </label>
-                            <input
-                                type="text"
-                                id="grade"
-                                name="grade"
-                                value={formData.grade}
-                                onChange={handleChange}
-                                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2.5 focus:ring-blue-500 focus:border-blue-500"
-                            />
-                        </div>
-                        <div>
-                            <label
-                                htmlFor="enrollmentDate"
-                                className="block text-sm font-medium text-gray-700"
-                            >
-                                Enrollment Date
-                            </label>
-                            <input
-                                type="date"
-                                id="enrollmentDate"
-                                name="enrollmentDate"
-                                value={formData.enrollmentDate}
-                                onChange={handleChange}
-                                required
-                                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2.5 focus:ring-blue-500 focus:border-blue-500"
-                            />
-                        </div>
-                        <div>
-                            <label
-                                htmlFor="classId"
-                                className="block text-sm font-medium text-gray-700"
-                            >
-                                Class
-                            </label>
-                            <select
-                                id="classId"
-                                name="classId"
-                                value={formData.classId}
-                                onChange={handleChange}
-                                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2.5 focus:ring-blue-500 focus:border-blue-500"
-                            >
-                                <option value="">Select Class</option>
-                                {allClasses.map((clazz) => (
-                                    <option key={clazz.id} value={clazz.id}>
-                                        {clazz.className} ({clazz.classCode})
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-                        <div>
-                            <label
-                                htmlFor="subjectIds"
-                                className="block text-sm font-medium text-gray-700"
-                            >
-                                Subjects (Select multiple)
-                            </label>
-                            <select
-                                multiple={true}
-                                id="subjectIds"
-                                name="subjectIds"
-                                value={formData.subjectIds}
-                                onChange={handleSubjectIdsChange}
-                                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2.5 h-32 focus:ring-blue-500 focus:border-blue-500"
-                            >
-                                {allSubjects.map((subject) => (
-                                    <option key={subject.id} value={subject.id}>
-                                        {subject.subjectName}
-                                    </option>
-                                ))}
-                            </select>
+                    {/* Academic Information Section */}
+                    <div
+                        className="bg-gradient-to-r from-orange-50 to-amber-50 rounded-2xl p-6 border border-orange-200">
+                        <div className="flex items-center mb-6">
+                            <div className="bg-orange-500 p-3 rounded-xl">
+                                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor"
+                                     viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                                          d="M12 14l9-5-9-5-9 5 9 5z"/>
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                                          d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"/>
+                                </svg>
+                            </div>
+                            <h3 className="text-xl font-bold text-gray-800 ml-4">Academic Information</h3>
                         </div>
 
-                        {/* Parent Details */}
-                        <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4 border-t pt-4 mt-4">
-                            <h3 className="text-lg font-semibold text-gray-800 col-span-full mb-2">
-                                Parent / Guardian Details
-                            </h3>
-                            <div>
-                                <label
-                                    htmlFor="fatherName"
-                                    className="block text-sm font-medium text-gray-700"
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="space-y-2">
+                                <label htmlFor="grade" className="block text-sm font-semibold text-gray-700">
+                                    Grade
+                                </label>
+                                <input
+                                    type="text"
+                                    id="grade"
+                                    name="grade"
+                                    value={formData.grade}
+                                    onChange={handleChange}
+                                    className="w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-200 bg-white/80 backdrop-blur-sm"
+                                    placeholder="Enter grade"
+                                />
+                            </div>
+
+                            <div className="space-y-2">
+                                <label htmlFor="enrollmentDate" className="block text-sm font-semibold text-gray-700">
+                                    Enrollment Date <span className="text-red-500">*</span>
+                                </label>
+                                <input
+                                    type="date"
+                                    id="enrollmentDate"
+                                    name="enrollmentDate"
+                                    value={formData.enrollmentDate}
+                                    onChange={handleChange}
+                                    required
+                                    className="w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-200 bg-white/80 backdrop-blur-sm"
+                                />
+                            </div>
+
+                            <div className="space-y-2">
+                                <label htmlFor="classId" className="block text-sm font-semibold text-gray-700">
+                                    Class
+                                </label>
+                                <select
+                                    id="classId"
+                                    name="classId"
+                                    value={formData.classId}
+                                    onChange={handleChange}
+                                    className="w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-200 bg-white/80 backdrop-blur-sm"
                                 >
+                                    <option value="">Select Class</option>
+                                    {allClasses.map((clazz) => (
+                                        <option key={clazz.id} value={clazz.id}>
+                                            {clazz.className} ({clazz.classCode})
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <div className="space-y-2">
+                                <label htmlFor="subjectIds" className="block text-sm font-semibold text-gray-700">
+                                    Subjects
+                                    <span
+                                        className="text-xs text-gray-500 ml-2">(Hold Ctrl/Cmd to select multiple)</span>
+                                </label>
+                                <select
+                                    multiple={true}
+                                    id="subjectIds"
+                                    name="subjectIds"
+                                    value={formData.subjectIds}
+                                    onChange={handleSubjectIdsChange}
+                                    className="w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-200 bg-white/80 backdrop-blur-sm h-32"
+                                >
+                                    {allSubjects.map((subject) => (
+                                        <option key={subject.id} value={subject.id}>
+                                            {subject.subjectName}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Parent/Guardian Information Section */}
+                    <div className="bg-gradient-to-r from-pink-50 to-rose-50 rounded-2xl p-6 border border-pink-200">
+                        <div className="flex items-center mb-6">
+                            <div className="bg-pink-500 p-3 rounded-xl">
+                                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor"
+                                     viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                                          d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                                </svg>
+                            </div>
+                            <h3 className="text-xl font-bold text-gray-800 ml-4">Parent/Guardian Information</h3>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="space-y-2">
+                                <label htmlFor="fatherName" className="block text-sm font-semibold text-gray-700">
                                     Father's Name
                                 </label>
                                 <input
@@ -869,14 +903,13 @@ const StudentManagement = () => {
                                     name="fatherName"
                                     value={formData.fatherName}
                                     onChange={handleChange}
-                                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2.5 focus:ring-blue-500 focus:border-blue-500"
+                                    className="w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-pink-500 focus:border-pink-500 transition-all duration-200 bg-white/80 backdrop-blur-sm"
+                                    placeholder="Enter father's name"
                                 />
                             </div>
-                            <div>
-                                <label
-                                    htmlFor="motherName"
-                                    className="block text-sm font-medium text-gray-700"
-                                >
+
+                            <div className="space-y-2">
+                                <label htmlFor="motherName" className="block text-sm font-semibold text-gray-700">
                                     Mother's Name
                                 </label>
                                 <input
@@ -885,14 +918,14 @@ const StudentManagement = () => {
                                     name="motherName"
                                     value={formData.motherName}
                                     onChange={handleChange}
-                                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2.5 focus:ring-blue-500 focus:border-blue-500"
+                                    className="w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-pink-500 focus:border-pink-500 transition-all duration-200 bg-white/80 backdrop-blur-sm"
+                                    placeholder="Enter mother's name"
                                 />
                             </div>
-                            <div>
-                                <label
-                                    htmlFor="fatherMobileNumber"
-                                    className="block text-sm font-medium text-gray-700"
-                                >
+
+                            <div className="space-y-2">
+                                <label htmlFor="fatherMobileNumber"
+                                       className="block text-sm font-semibold text-gray-700">
                                     Father's Mobile Number
                                 </label>
                                 <input
@@ -901,14 +934,14 @@ const StudentManagement = () => {
                                     name="fatherMobileNumber"
                                     value={formData.fatherMobileNumber}
                                     onChange={handleChange}
-                                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2.5 focus:ring-blue-500 focus:border-blue-500"
+                                    className="w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-pink-500 focus:border-pink-500 transition-all duration-200 bg-white/80 backdrop-blur-sm"
+                                    placeholder="Enter father's mobile number"
                                 />
                             </div>
-                            <div>
-                                <label
-                                    htmlFor="motherMobileNumber"
-                                    className="block text-sm font-medium text-gray-700"
-                                >
+
+                            <div className="space-y-2">
+                                <label htmlFor="motherMobileNumber"
+                                       className="block text-sm font-semibold text-gray-700">
                                     Mother's Mobile Number
                                 </label>
                                 <input
@@ -917,15 +950,15 @@ const StudentManagement = () => {
                                     name="motherMobileNumber"
                                     value={formData.motherMobileNumber}
                                     onChange={handleChange}
-                                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2.5 focus:ring-blue-500 focus:border-blue-500"
+                                    className="w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-pink-500 focus:border-pink-500 transition-all duration-200 bg-white/80 backdrop-blur-sm"
+                                    placeholder="Enter mother's mobile number"
                                 />
                             </div>
-                            <div className="md:col-span-2">
-                                <label
-                                    htmlFor="localMobileNumber"
-                                    className="block text-sm font-medium text-gray-700"
-                                >
-                                    Local Contact Mobile Number (Student)
+
+                            <div className="md:col-span-2 space-y-2">
+                                <label htmlFor="localMobileNumber"
+                                       className="block text-sm font-semibold text-gray-700">
+                                    Local Contact Mobile Number
                                 </label>
                                 <input
                                     type="text"
@@ -933,21 +966,29 @@ const StudentManagement = () => {
                                     name="localMobileNumber"
                                     value={formData.localMobileNumber}
                                     onChange={handleChange}
-                                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2.5 focus:ring-blue-500 focus:border-blue-500"
+                                    className="w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-pink-500 focus:border-pink-500 transition-all duration-200 bg-white/80 backdrop-blur-sm"
+                                    placeholder="Enter local contact number"
                                 />
                             </div>
                         </div>
+                    </div>
 
-                        {/* More Student Details */}
-                        <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4 border-t pt-4 mt-4">
-                            <h3 className="text-lg font-semibold text-gray-800 col-span-full mb-2">
-                                Additional Student Information
-                            </h3>
-                            <div>
-                                <label
-                                    htmlFor="religion"
-                                    className="block text-sm font-medium text-gray-700"
-                                >
+                    {/* Additional Information Section */}
+                    <div className="bg-gradient-to-r from-teal-50 to-cyan-50 rounded-2xl p-6 border border-teal-200">
+                        <div className="flex items-center mb-6">
+                            <div className="bg-teal-500 p-3 rounded-xl">
+                                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor"
+                                     viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                                          d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                </svg>
+                            </div>
+                            <h3 className="text-xl font-bold text-gray-800 ml-4">Additional Information</h3>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="space-y-2">
+                                <label htmlFor="religion" className="block text-sm font-semibold text-gray-700">
                                     Religion
                                 </label>
                                 <input
@@ -956,14 +997,13 @@ const StudentManagement = () => {
                                     name="religion"
                                     value={formData.religion}
                                     onChange={handleChange}
-                                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2.5 focus:ring-blue-500 focus:border-blue-500"
+                                    className="w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all duration-200 bg-white/80 backdrop-blur-sm"
+                                    placeholder="Enter religion"
                                 />
                             </div>
-                            <div>
-                                <label
-                                    htmlFor="nationality"
-                                    className="block text-sm font-medium text-gray-700"
-                                >
+
+                            <div className="space-y-2">
+                                <label htmlFor="nationality" className="block text-sm font-semibold text-gray-700">
                                     Nationality
                                 </label>
                                 <input
@@ -972,15 +1012,14 @@ const StudentManagement = () => {
                                     name="nationality"
                                     value={formData.nationality}
                                     onChange={handleChange}
-                                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2.5 focus:ring-blue-500 focus:border-blue-500"
+                                    className="w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all duration-200 bg-white/80 backdrop-blur-sm"
+                                    placeholder="Enter nationality"
                                 />
                             </div>
-                            <div>
-                                <label
-                                    htmlFor="category"
-                                    className="block text-sm font-medium text-gray-700"
-                                >
-                                    Category (e.g., General, OBC, SC, ST)
+
+                            <div className="space-y-2">
+                                <label htmlFor="category" className="block text-sm font-semibold text-gray-700">
+                                    Category
                                 </label>
                                 <input
                                     type="text"
@@ -988,29 +1027,26 @@ const StudentManagement = () => {
                                     name="category"
                                     value={formData.category}
                                     onChange={handleChange}
-                                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2.5 focus:ring-blue-500 focus:border-blue-500"
+                                    className="w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all duration-200 bg-white/80 backdrop-blur-sm"
+                                    placeholder="e.g., General, OBC, SC, ST"
                                 />
                             </div>
-                            <div className="flex items-center mt-6">
+
+                            <div className="flex items-center space-x-3 mt-8">
                                 <input
                                     type="checkbox"
                                     id="physicalHandicapped"
                                     name="physicalHandicapped"
                                     checked={formData.physicalHandicapped}
                                     onChange={handleChange}
-                                    className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                                    className="w-5 h-5 text-teal-600 border-2 border-gray-300 rounded focus:ring-teal-500 focus:ring-2"
                                 />
-                                <label
-                                    htmlFor="physicalHandicapped"
-                                    className="ml-2 block text-sm font-medium text-gray-700"
-                                >
+                                <label htmlFor="physicalHandicapped" className="text-sm font-semibold text-gray-700">
                                     Physical Handicapped
                                 </label>
                             </div>
                         </div>
                     </div>
-                    {" "}
-                    {/* End of main grid */}
                     {/* Profile Image Section */}
                     <div className="border-t pt-4 mt-4">
                         <label
@@ -1080,54 +1116,80 @@ const StudentManagement = () => {
                 </form>
             </Modal>
 
-            {/* View Student Details Modal */}
             <Modal
                 isOpen={isViewModalOpen}
                 onClose={() => setIsViewModalOpen(false)}
                 title="Student Details"
             >
                 {studentDetails ? (
-                    <div className="space-y-4 text-gray-700 text-base">
+                    <div className="space-y-4 text-gray-800 text-base font-sans">
                         {studentDetails.profileImageUrl && (
-                            <div className="flex justify-center mb-4">
+                            <div className="flex justify-center mb-6">
                                 <img
                                     src={`${api.defaults.baseURL}${studentDetails.profileImageUrl}`}
                                     alt="Profile"
-                                    className="w-32 h-32 rounded-full object-cover border-2 border-blue-300 shadow-md"
+                                    className="w-36 h-36 rounded-full object-cover border-4 border-blue-400 shadow-lg transform transition-transform duration-300 hover:scale-105"
                                 />
                             </div>
                         )}
-                        <p>
-                            <strong>ID:</strong> {studentDetails.id}
-                        </p>
-                        <p>
-                            <strong>Username:</strong> {studentDetails.username}
-                        </p>
-                        <p>
-                            <strong>Name:</strong> {studentDetails.firstName}{" "}
-                            {studentDetails.lastName}{" "}
-                            {studentDetails.studentHindiName &&
-                                `(${studentDetails.studentHindiName})`}
-                        </p>
-                        <p>
-                            <strong>Email:</strong> {studentDetails.email}
-                        </p>
-                        <p>
-                            <strong>Roll Number:</strong> {studentDetails.rollNumber || "N/A"}
-                        </p>
-                        <p>
-                            <strong>Date of Birth:</strong>{" "}
+
+                        {/* Personal Details Section */}
+                        <div className="bg-blue-50 p-4 rounded-lg shadow-sm">
+                            <h3 className="text-lg font-bold text-blue-700 mb-3 border-b pb-2 border-blue-200">
+                                Personal Information
+                            </h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-y-2 gap-x-4">
+                                <p>
+                                    <strong>ID:</strong>{" "}
+                                    <span className="text-gray-700">{studentDetails.id}</span>
+                                </p>
+                                <p>
+                                    <strong>Username:</strong>{" "}
+                                    <span className="text-gray-700">
+                            {studentDetails.username}
+                        </span>
+                                </p>
+                                <p className="md:col-span-2">
+                                    <strong>Name:</strong>{" "}
+                                    <span className="text-gray-700">
+                            {studentDetails.firstName} {studentDetails.lastName}{" "}
+                                        {studentDetails.studentHindiName &&
+                                            `(${studentDetails.studentHindiName})`}
+                        </span>
+                                </p>
+                                <p>
+                                    <strong>Email:</strong>{" "}
+                                    <span className="text-blue-600 hover:underline cursor-pointer">
+                            {studentDetails.email}
+                        </span>
+                                </p>
+                                <p>
+                                    <strong>Roll Number:</strong>{" "}
+                                    <span className="text-gray-700">
+                            {studentDetails.rollNumber || "N/A"}
+                        </span>
+                                </p>
+                                <p>
+                                    <strong>Date of Birth:</strong>{" "}
+                                    <span className="text-gray-700">
                             {studentDetails.dateOfBirth || "N/A"}
-                        </p>
-                        <p>
-                            <strong>Gender:</strong> {studentDetails.gender || "N/A"}
-                        </p>
-                        <p>
-                            <strong>Student Phone:</strong>{" "}
+                        </span>
+                                </p>
+                                <p>
+                                    <strong>Gender:</strong>{" "}
+                                    <span className="text-gray-700">
+                            {studentDetails.gender || "N/A"}
+                        </span>
+                                </p>
+                                <p>
+                                    <strong>Student Phone:</strong>{" "}
+                                    <span className="text-gray-700">
                             {studentDetails.phoneNumber || "N/A"}
-                        </p>
-                        <p>
-                            <strong>Address:</strong>{" "}
+                        </span>
+                                </p>
+                                <p className="md:col-span-2">
+                                    <strong>Address:</strong>{" "}
+                                    <span className="text-gray-700">
                             {[
                                 studentDetails.addressLine1,
                                 studentDetails.city,
@@ -1137,72 +1199,119 @@ const StudentManagement = () => {
                             ]
                                 .filter(Boolean)
                                 .join(", ") || "N/A"}
-                        </p>
-                        <p>
-                            <strong>Enrollment Date:</strong>{" "}
+                        </span>
+                                </p>
+                                <p>
+                                    <strong>Enrollment Date:</strong>{" "}
+                                    <span className="text-gray-700">
                             {studentDetails.enrollmentDate || "N/A"}
-                        </p>
-                        <p>
-                            <strong>Grade:</strong> {studentDetails.grade || "N/A"}
-                        </p>
-                        <p>
-                            <strong>Role:</strong> {studentDetails.role}
-                        </p>
-                        <p>
-                            <strong>Class:</strong> {getClassName(studentDetails.classId)}
-                        </p>
-                        <p>
-                            <strong>Subjects:</strong>{" "}
+                        </span>
+                                </p>
+                                <p>
+                                    <strong>Grade:</strong>{" "}
+                                    <span className="text-gray-700">
+                            {studentDetails.grade || "N/A"}
+                        </span>
+                                </p>
+                                <p>
+                                    <strong>Role:</strong>{" "}
+                                    <span className="text-gray-700">
+                            {studentDetails.role}
+                        </span>
+                                </p>
+                                <p>
+                                    <strong>Class:</strong>{" "}
+                                    <span className="text-gray-700">
+                            {getClassName(studentDetails.classId)}
+                        </span>
+                                </p>
+                                <p className="md:col-span-2">
+                                    <strong>Subjects:</strong>{" "}
+                                    <span className="text-gray-700">
                             {getSubjectNames(studentDetails.subjectIds)}
-                        </p>
+                        </span>
+                                </p>
+                            </div>
+                        </div>
 
-                        {/* NEW: Parent Details */}
-                        <h3 className="text-lg font-semibold text-gray-800 mt-6 mb-2">
-                            Parent / Guardian Details
-                        </h3>
-                        <p>
-                            <strong>Father's Name:</strong> {studentDetails.fatherName || "N/A"}
-                        </p>
-                        <p>
-                            <strong>Mother's Name:</strong> {studentDetails.motherName || "N/A"}
-                        </p>
-                        <p>
-                            <strong>Father's Phone:</strong>{" "}
+                        {/* Parent Details Section */}
+                        <div className="bg-green-50 p-4 rounded-lg shadow-sm mt-6">
+                            <h3 className="text-lg font-bold text-green-700 mb-3 border-b pb-2 border-green-200">
+                                Parent / Guardian Details
+                            </h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-y-2 gap-x-4">
+                                <p>
+                                    <strong>Father's Name:</strong>{" "}
+                                    <span className="text-gray-700">
+                            {studentDetails.fatherName || "N/A"}
+                        </span>
+                                </p>
+                                <p>
+                                    <strong>Mother's Name:</strong>{" "}
+                                    <span className="text-gray-700">
+                            {studentDetails.motherName || "N/A"}
+                        </span>
+                                </p>
+                                <p>
+                                    <strong>Father's Phone:</strong>{" "}
+                                    <span className="text-gray-700">
                             {studentDetails.fatherMobileNumber || "N/A"}
-                        </p>
-                        <p>
-                            <strong>Mother's Phone:</strong>{" "}
+                        </span>
+                                </p>
+                                <p>
+                                    <strong>Mother's Phone:</strong>{" "}
+                                    <span className="text-gray-700">
                             {studentDetails.motherMobileNumber || "N/A"}
-                        </p>
-                        <p>
-                            <strong>Local Contact Phone:</strong>{" "}
+                        </span>
+                                </p>
+                                <p>
+                                    <strong>Local Contact Phone:</strong>{" "}
+                                    <span className="text-gray-700">
                             {studentDetails.localMobileNumber || "N/A"}
-                        </p>
+                        </span>
+                                </p>
+                            </div>
+                        </div>
 
-                        {/* NEW: More Student Details */}
-                        <h3 className="text-lg font-semibold text-gray-800 mt-6 mb-2">
-                            Additional Student Information
-                        </h3>
-                        <p>
-                            <strong>Religion:</strong> {studentDetails.religion || "N/A"}
-                        </p>
-                        <p>
-                            <strong>Nationality:</strong> {studentDetails.nationality || "N/A"}
-                        </p>
-                        <p>
-                            <strong>Category:</strong> {studentDetails.category || "N/A"}
-                        </p>
-                        <p>
-                            <strong>Physical Handicapped:</strong>{" "}
+                        {/* More Student Details Section */}
+                        <div className="bg-purple-50 p-4 rounded-lg shadow-sm mt-6">
+                            <h3 className="text-lg font-bold text-purple-700 mb-3 border-b pb-2 border-purple-200">
+                                Additional Student Information
+                            </h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-y-2 gap-x-4">
+                                <p>
+                                    <strong>Religion:</strong>{" "}
+                                    <span className="text-gray-700">
+                            {studentDetails.religion || "N/A"}
+                        </span>
+                                </p>
+                                <p>
+                                    <strong>Nationality:</strong>{" "}
+                                    <span className="text-gray-700">
+                            {studentDetails.nationality || "N/A"}
+                        </span>
+                                </p>
+                                <p>
+                                    <strong>Category:</strong>{" "}
+                                    <span className="text-gray-700">
+                            {studentDetails.category || "N/A"}
+                        </span>
+                                </p>
+                                <p>
+                                    <strong>Physical Handicapped:</strong>{" "}
+                                    <span className="text-gray-700">
                             {studentDetails.physicalHandicapped !== null
                                 ? studentDetails.physicalHandicapped
                                     ? "Yes"
                                     : "No"
                                 : "N/A"}
-                        </p>
+                        </span>
+                                </p>
+                            </div>
+                        </div>
                     </div>
                 ) : (
-                    <p>Loading student details...</p>
+                    <p className="text-center text-gray-600 py-8">Loading student details...</p>
                 )}
             </Modal>
         </div>

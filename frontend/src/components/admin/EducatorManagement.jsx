@@ -812,71 +812,212 @@ const EducatorManagement = () => {
                 </form>
             </Modal>
 
-            {/* View Educator Details Modal */}
             <Modal
                 isOpen={isViewModalOpen}
                 onClose={() => setIsViewModalOpen(false)}
                 title="Educator Details"
             >
                 {educatorDetails ? (
-                    <div className="space-y-4 text-gray-700 text-base">
+                    <div className="space-y-6 text-gray-800 text-base font-sans">
                         {educatorDetails.profileImageUrl && (
-                            <div className="flex justify-center mb-4">
+                            <div className="flex justify-center mb-6">
                                 <img
                                     src={`${api.defaults.baseURL}${educatorDetails.profileImageUrl}`}
                                     alt="Profile"
-                                    className="w-32 h-32 rounded-full object-cover border-2 border-blue-300 shadow-md"
+                                    className="w-36 h-36 rounded-full object-cover border-4 border-emerald-400 shadow-lg transform transition-transform duration-300 hover:scale-105"
                                 />
                             </div>
                         )}
-                        <DetailItem icon={faUserCircle} label="ID" value={educatorDetails.id}/>
-                        <DetailItem icon={faUserCircle} label="Username" value={educatorDetails.username}/>
-                        <DetailItem
-                            icon={faUserCircle} label="Name"
-                            value={`${educatorDetails.firstName} ${educatorDetails.lastName}`}
-                        />
-                        <DetailItem icon={faUserCircle} label="Hindi Name"
-                                    value={educatorDetails.educatorHindiName}/> {/* New */}
-                        <DetailItem icon={faEnvelope} label="Email" value={educatorDetails.email}/>
-                        <DetailItem icon={faCalendarAlt} label="Date of Birth" value={educatorDetails.dateOfBirth}/>
-                        <DetailItem icon={faVenusMars} label="Gender" value={educatorDetails.gender}/>
-                        <DetailItem icon={faPhone} label="Phone Number" value={educatorDetails.phoneNumber}/>
-                        <DetailItem icon={faPhone} label="Alternate Phone"
-                                    value={educatorDetails.alternatePhoneNumber}/> {/* New */}
-                        <DetailItem icon={faGlobe} label="Nationality" value={educatorDetails.nationality}/> {/* New */}
 
-                        <h4 className="text-lg font-semibold text-blue-800 mt-6 mb-2">Address</h4>
-                        <DetailItem icon={faHome} label="Address Line 1"
-                                    value={educatorDetails.addressLine1}/> {/* New */}
-                        <DetailItem icon={faBuilding} label="Address Line 2"
-                                    value={educatorDetails.addressLine2}/> {/* New */}
-                        <DetailItem icon={faMapMarkerAlt} label="City" value={educatorDetails.city}/> {/* New */}
-                        <DetailItem icon={faMapMarkerAlt} label="State" value={educatorDetails.state}/> {/* New */}
-                        <DetailItem icon={faMapPin} label="Pincode" value={educatorDetails.pincode}/> {/* New */}
-                        <DetailItem icon={faGlobe} label="Country" value={educatorDetails.country}/> {/* New */}
+                        {/* Personal Details Section */}
+                        <div className="bg-emerald-50 p-4 rounded-lg shadow-sm">
+                            <h3 className="text-lg font-bold text-emerald-700 mb-3 border-b pb-2 border-emerald-200">
+                                Personal Information
+                            </h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-y-2 gap-x-4">
+                                <p className="flex flex-col">
+                                    <strong className="text-gray-600 text-sm mb-0.5">ID:</strong>
+                                    <span className="text-gray-900 text-base break-words">
+                            {educatorDetails.id || "N/A"}
+                        </span>
+                                </p>
+                                <p className="flex flex-col">
+                                    <strong className="text-gray-600 text-sm mb-0.5">Username:</strong>
+                                    <span className="text-gray-900 text-base break-words">
+                            {educatorDetails.username || "N/A"}
+                        </span>
+                                </p>
+                                <p className="flex flex-col">
+                                    <strong className="text-gray-600 text-sm mb-0.5">Name:</strong>
+                                    <span className="text-gray-900 text-base break-words">
+                            {`${educatorDetails.firstName} ${educatorDetails.lastName}` || "N/A"}
+                        </span>
+                                </p>
+                                <p className="flex flex-col">
+                                    <strong className="text-gray-600 text-sm mb-0.5">Hindi Name:</strong>
+                                    <span className="text-gray-900 text-base break-words">
+                            {educatorDetails.educatorHindiName || "N/A"}
+                        </span>
+                                </p>
+                                <p className="flex flex-col">
+                                    <strong className="text-gray-600 text-sm mb-0.5">Email:</strong>
+                                    <a href={`mailto:${educatorDetails.email}`}
+                                       className="text-blue-600 hover:underline text-base break-words">
+                                        {educatorDetails.email || "N/A"}
+                                    </a>
+                                </p>
+                                <p className="flex flex-col">
+                                    <strong className="text-gray-600 text-sm mb-0.5">Date of Birth:</strong>
+                                    <span className="text-gray-900 text-base break-words">
+                            {educatorDetails.dateOfBirth || "N/A"}
+                        </span>
+                                </p>
+                                <p className="flex flex-col">
+                                    <strong className="text-gray-600 text-sm mb-0.5">Gender:</strong>
+                                    <span className="text-gray-900 text-base break-words">
+                            {educatorDetails.gender || "N/A"}
+                        </span>
+                                </p>
+                                <p className="flex flex-col">
+                                    <strong className="text-gray-600 text-sm mb-0.5">Phone Number:</strong>
+                                    <span className="text-gray-900 text-base break-words">
+                            {educatorDetails.phoneNumber || "N/A"}
+                        </span>
+                                </p>
+                                <p className="flex flex-col">
+                                    <strong className="text-gray-600 text-sm mb-0.5">Alternate Phone:</strong>
+                                    <span className="text-gray-900 text-base break-words">
+                            {educatorDetails.alternatePhoneNumber || "N/A"}
+                        </span>
+                                </p>
+                                <p className="flex flex-col">
+                                    <strong className="text-gray-600 text-sm mb-0.5">Nationality:</strong>
+                                    <span className="text-gray-900 text-base break-words">
+                            {educatorDetails.nationality || "N/A"}
+                        </span>
+                                </p>
+                            </div>
+                        </div>
 
-                        <h4 className="text-lg font-semibold text-blue-800 mt-6 mb-2">Professional Details</h4>
-                        <DetailItem icon={faCalendarAlt} label="Hire Date" value={educatorDetails.hireDate}/>
-                        <DetailItem icon={faGraduationCap} label="Qualification" value={educatorDetails.qualification}/>
-                        <DetailItem icon={faCalendarAlt} label="Experience (Years)"
-                                    value={educatorDetails.experienceYears}/>
-                        <DetailItem icon={faBriefcase} label="Designation"
-                                    value={educatorDetails.designation}/> {/* New */}
-                        <DetailItem icon={faBook} label="Subject Taught"
-                                    value={getSubjectName(educatorDetails.subjectId)}/>
-                        <DetailItem icon={faChalkboardTeacher} label="Classes"
-                                    value={getClassNames(educatorDetails.classIds)}/>
+                        {/* Address Details Section */}
+                        <div className="bg-orange-50 p-4 rounded-lg shadow-sm mt-6">
+                            <h3 className="text-lg font-bold text-orange-700 mb-3 border-b pb-2 border-orange-200">
+                                Address Details
+                            </h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-y-2 gap-x-4">
+                                <p className="flex flex-col">
+                                    <strong className="text-gray-600 text-sm mb-0.5">Address Line 1:</strong>
+                                    <span className="text-gray-900 text-base break-words">
+                            {educatorDetails.addressLine1 || "N/A"}
+                        </span>
+                                </p>
+                                <p className="flex flex-col">
+                                    <strong className="text-gray-600 text-sm mb-0.5">Address Line 2:</strong>
+                                    <span className="text-gray-900 text-base break-words">
+                            {educatorDetails.addressLine2 || "N/A"}
+                        </span>
+                                </p>
+                                <p className="flex flex-col">
+                                    <strong className="text-gray-600 text-sm mb-0.5">City:</strong>
+                                    <span className="text-gray-900 text-base break-words">
+                            {educatorDetails.city || "N/A"}
+                        </span>
+                                </p>
+                                <p className="flex flex-col">
+                                    <strong className="text-gray-600 text-sm mb-0.5">State:</strong>
+                                    <span className="text-gray-900 text-base break-words">
+                            {educatorDetails.state || "N/A"}
+                        </span>
+                                </p>
+                                <p className="flex flex-col">
+                                    <strong className="text-gray-600 text-sm mb-0.5">Pincode:</strong>
+                                    <span className="text-gray-900 text-base break-words">
+                            {educatorDetails.pincode || "N/A"}
+                        </span>
+                                </p>
+                                <p className="flex flex-col">
+                                    <strong className="text-gray-600 text-sm mb-0.5">Country:</strong>
+                                    <span className="text-gray-900 text-base break-words">
+                            {educatorDetails.country || "N/A"}
+                        </span>
+                                </p>
+                            </div>
+                        </div>
 
-                        <h4 className="text-lg font-semibold text-blue-800 mt-6 mb-2">Identification & Bank</h4>
-                        <DetailItem icon={faIdCard} label="Aadhar Number"
-                                    value={educatorDetails.aadharNumber}/> {/* New */}
-                        <DetailItem icon={faCreditCard} label="Account Number"
-                                    value={educatorDetails.accountNumber}/> {/* New */}
+                        {/* Professional Details Section */}
+                        <div className="bg-blue-50 p-4 rounded-lg shadow-sm mt-6">
+                            <h3 className="text-lg font-bold text-blue-700 mb-3 border-b pb-2 border-blue-200">
+                                Professional Details
+                            </h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-y-2 gap-x-4">
+                                <p className="flex flex-col">
+                                    <strong className="text-gray-600 text-sm mb-0.5">Hire Date:</strong>
+                                    <span className="text-gray-900 text-base break-words">
+                            {educatorDetails.hireDate || "N/A"}
+                        </span>
+                                </p>
+                                <p className="flex flex-col">
+                                    <strong className="text-gray-600 text-sm mb-0.5">Qualification:</strong>
+                                    <span className="text-gray-900 text-base break-words">
+                            {educatorDetails.qualification || "N/A"}
+                        </span>
+                                </p>
+                                <p className="flex flex-col">
+                                    <strong className="text-gray-600 text-sm mb-0.5">Experience (Years):</strong>
+                                    <span className="text-gray-900 text-base break-words">
+                            {educatorDetails.experienceYears || "N/A"}
+                        </span>
+                                </p>
+                                <p className="flex flex-col">
+                                    <strong className="text-gray-600 text-sm mb-0.5">Designation:</strong>
+                                    <span className="text-gray-900 text-base break-words">
+                            {educatorDetails.designation || "N/A"}
+                        </span>
+                                </p>
+                                <p className="flex flex-col">
+                                    <strong className="text-gray-600 text-sm mb-0.5">Subject Taught:</strong>
+                                    <span className="text-gray-900 text-base break-words">
+                            {getSubjectName(educatorDetails.subjectId) || "N/A"}
+                        </span>
+                                </p>
+                                <p className="flex flex-col">
+                                    <strong className="text-gray-600 text-sm mb-0.5">Classes:</strong>
+                                    <span className="text-gray-900 text-base break-words">
+                            {getClassNames(educatorDetails.classIds) || "N/A"}
+                        </span>
+                                </p>
+                                <p className="flex flex-col">
+                                    <strong className="text-gray-600 text-sm mb-0.5">Role:</strong>
+                                    <span className="text-gray-900 text-base break-words">
+                            {educatorDetails.role || "N/A"}
+                        </span>
+                                </p>
+                            </div>
+                        </div>
 
-                        <DetailItem icon={faUserCircle} label="Role" value={educatorDetails.role}/>
+                        {/* Identification & Bank Details Section */}
+                        <div className="bg-purple-50 p-4 rounded-lg shadow-sm mt-6">
+                            <h3 className="text-lg font-bold text-purple-700 mb-3 border-b pb-2 border-purple-200">
+                                Identification & Bank
+                            </h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-y-2 gap-x-4">
+                                <p className="flex flex-col">
+                                    <strong className="text-gray-600 text-sm mb-0.5">Aadhar Number:</strong>
+                                    <span className="text-gray-900 text-base break-words">
+                            {educatorDetails.aadharNumber || "N/A"}
+                        </span>
+                                </p>
+                                <p className="flex flex-col">
+                                    <strong className="text-gray-600 text-sm mb-0.5">Account Number:</strong>
+                                    <span className="text-gray-900 text-base break-words">
+                            {educatorDetails.accountNumber || "N/A"}
+                        </span>
+                                </p>
+                            </div>
+                        </div>
                     </div>
                 ) : (
-                    <p>Loading educator details...</p>
+                    <p className="text-center text-gray-600 py-8">Loading educator details...</p>
                 )}
             </Modal>
         </div>

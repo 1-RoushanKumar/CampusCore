@@ -1,143 +1,181 @@
-import React from 'react';
+import React from "react";
+import {useEffect} from "react";
 
 const About = () => {
+    useEffect(() => {
+        // Scroll to the top of the page when the component mounts
+        window.scrollTo(0, 0);
+    }, []);
+
     return (
-        // The main container now uses the linear gradient background from the HTML
-        // and ensures it takes full height.
-        <div className="bg-gradient-to-br from-[#667eea] to-[#764ba2] min-h-screen text-gray-800 py-8 md:py-12">
-            {/* Container for the main content, centering it and adding padding */}
-            <main className="container mx-auto px-4 py-8 md:py-12">
-                {/* Main page heading with Playfair Display font, white color, and shadow */}
-                <h2 className="text-4xl font-extrabold text-center mb-10 md:mb-16 font-['Playfair_Display'] text-white drop-shadow-lg">
-                    About CampusCore
-                </h2>
+        <div
+            className="min-h-screen bg-gradient-to-br from-blue-100 via-purple-100 to-pink-100 py-6 px-2 md:px-4 lg:px-6 font-sans text-gray-800">
+            <div className="max-w-7xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden p-8 md:p-12">
+                {/* Header */}
+                <header className="text-center mb-10 md:mb-16">
+                    <h1 className="text-4xl sm:text-5xl font-extrabold text-gray-900 leading-tight mb-4 font-['Playfair_Display']">
+                        Discover Campus
+                    </h1>
+                    <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+                        Your gateway to a connected and enriched academic experience.
+                    </p>
+                </header>
 
-                {/* Section 1: Image Left, Text Right */}
-                <section
-                    className="flex flex-col md:flex-row items-center bg-white rounded-xl shadow-lg p-6 mb-10 md:mb-16"
-                >
-                    <div className="md:w-1/3 flex flex-col items-center mb-6 md:mb-0 md:mr-8">
-                        <img
-                            src="https://placehold.co/400x400/007bff/ffffff?text=Principal+Image"
-                            alt="James Wilson"
-                            className="w-full h-auto rounded-lg shadow-md object-cover max-w-xs md:max-w-full"
-                        />
-                        <div className="text-center mt-3">
-                            <p className="font-semibold text-lg text-blue-700">James Wilson</p>
-                            <p className="text-sm text-gray-600">Principal</p>
+                {/* Mission */}
+                <section className="mb-10 md:mb-16">
+                    <div className="flex flex-col md:flex-row items-center bg-blue-50 rounded-xl p-6 shadow-md">
+                        <div className="md:w-1/3 flex justify-center mb-6 md:mb-0 md:mr-8">
+                            <svg
+                                className="w-24 h-24 text-blue-600"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                                xmlns="http://www.w3.org/2000/svg"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth="2"
+                                    d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.001 12.001 0 002.92 10.998c0 5.517 4.383 10.075 9.083 11.015 4.7-1.002 9.083-5.517 9.083-11.015A12.001 12.001 0 0021.08 7.982z"
+                                />
+                            </svg>
                         </div>
-                    </div>
-                    <div className="md:w-2/3 text-center md:text-left">
-                        {/* Section heading with Playfair Display font */}
-                        <h3 className="text-3xl font-bold text-blue-800 mb-4 font-['Playfair_Display']">
-                            A Message from Our Principal
-                        </h3>
-                        <p className="text-gray-700 leading-relaxed text-lg">
-                            "At CampusCore, we believe in fostering an environment where every
-                            student can thrive academically, socially, and personally. Our
-                            dedicated faculty and staff are committed to providing a holistic
-                            education that prepares young minds for the challenges and
-                            opportunities of the future. We are proud of our vibrant community
-                            and the strong foundation we build for lifelong learning."
-                        </p>
+                        <div className="md:w-2/3 text-center md:text-left">
+                            <h3 className="text-2xl font-bold text-blue-800 mb-4 font-['Playfair_Display']">
+                                Our Mission
+                            </h3>
+                            <p className="text-gray-700 leading-relaxed">
+                                To empower students, educators, and administrators with intuitive tools and resources
+                                that foster seamless communication, efficient management, and a vibrant learning
+                                community. We aim to simplify campus life and enhance educational outcomes for everyone.
+                            </p>
+                        </div>
                     </div>
                 </section>
 
-                {/* Section 2: Text Left, Image Right (reversed order for md screens) */}
-                <section
-                    className="flex flex-col md:flex-row-reverse items-center bg-white rounded-xl shadow-lg p-6 mb-10 md:mb-16"
-                >
-                    <div className="md:w-1/3 flex flex-col items-center mb-6 md:mb-0 md:ml-8">
-                        <img
-                            src="https://placehold.co/400x400/28a745/ffffff?text=Head+of+Academics+Image"
-                            alt="Dr. Sarah Chen"
-                            className="w-full h-auto rounded-lg shadow-md object-cover max-w-xs md:max-w-full"
-                        />
-                        <div className="text-center mt-3">
-                            <p className="font-semibold text-lg text-green-700">Dr. Sarah Chen</p>
-                            <p className="text-sm text-gray-600">Head of Academics</p>
+                {/* Vision */}
+                <section className="mb-10 md:mb-16">
+                    <div
+                        className="flex flex-col md:flex-row-reverse items-center bg-purple-50 rounded-xl p-6 shadow-md">
+                        <div className="md:w-1/3 flex justify-center mb-6 md:mb-0 md:ml-8">
+                            <svg
+                                className="w-24 h-24 text-purple-600"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                                xmlns="http://www.w3.org/2000/svg"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth="2"
+                                    d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M18 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-9-9a2 2 0 110 4 2 2 0 010-4zm0 0V3m0 0V2h2M9 12h6"
+                                />
+                            </svg>
                         </div>
-                    </div>
-                    <div className="md:w-2/3 text-center md:text-right">
-                        {/* Section heading with Playfair Display font */}
-                        <h3 className="text-3xl font-bold text-green-800 mb-4 font-['Playfair_Display']">
-                            Our Commitment to Academic Excellence
-                        </h3>
-                        <p className="text-gray-700 leading-relaxed text-lg">
-                            "Our curriculum at CampusCore is designed to be rigorous, engaging,
-                            and relevant. We encourage critical thinking, creativity, and
-                            problem-solving skills through innovative teaching methodologies.
-                            Our goal is to inspire a love for learning and equip students with
-                            the knowledge and tools they need to succeed in a rapidly changing
-                            world."
-                        </p>
+                        <div className="md:w-2/3 text-center md:text-right">
+                            <h3 className="text-2xl font-bold text-purple-800 mb-4 font-['Playfair_Display']">
+                                Our Vision
+                            </h3>
+                            <p className="text-gray-700 leading-relaxed">
+                                To be the leading digital platform for educational institutions, recognized for our
+                                innovation, reliability, and commitment to creating an inclusive and dynamic learning
+                                ecosystem that prepares individuals for future success.
+                            </p>
+                        </div>
                     </div>
                 </section>
 
-                {/* Section 3: Image Left, Text Right */}
-                <section
-                    className="flex flex-col md:flex-row items-center bg-white rounded-xl shadow-lg p-6 mb-10 md:mb-16"
-                >
-                    <div className="md:w-1/3 flex flex-col items-center mb-6 md:mb-0 md:mr-8">
-                        <img
-                            src="https://placehold.co/400x400/ffc107/ffffff?text=Student+Council+President+Image"
-                            alt="Emily Davis"
-                            className="w-full h-auto rounded-lg shadow-md object-cover max-w-xs md:max-w-full"
-                        />
-                        <div className="text-center mt-3">
-                            <p className="font-semibold text-lg text-yellow-700">Emily Davis</p>
-                            <p className="text-sm text-gray-600">Student Council President</p>
+                {/* Core Values */}
+                <section className="mb-10 md:mb-16">
+                    <h3 className="text-3xl font-bold text-center text-gray-900 mb-8 font-['Playfair_Display']">
+                        Our Core Values
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                        {/* Innovation */}
+                        <div className="bg-white rounded-lg shadow-md p-6 text-center border-t-4 border-blue-500">
+                            <svg
+                                className="w-12 h-12 text-blue-500 mx-auto mb-4"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                                xmlns="http://www.w3.org/2000/svg"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth="2"
+                                    d="M13 10V3L4 14h7v7l9-11h-7z"
+                                />
+                            </svg>
+                            <h4 className="text-xl font-semibold text-gray-800 mb-2">Innovation</h4>
+                            <p className="text-gray-600 text-sm">
+                                Continuously evolving to meet the changing needs of education.
+                            </p>
                         </div>
-                    </div>
-                    <div className="md:w-2/3 text-center md:text-left">
-                        {/* Section heading with Playfair Display font */}
-                        <h3 className="text-3xl font-bold text-yellow-800 mb-4 font-['Playfair_Display']">
-                            Student Life at CampusCore
-                        </h3>
-                        <p className="text-gray-700 leading-relaxed text-lg">
-                            "Being a student at CampusCore is an incredible experience! From
-                            diverse clubs and sports to engaging events and leadership
-                            opportunities, there's always something happening. We have a
-                            supportive community where everyone feels welcome and encouraged to
-                            explore their passions. It's truly a place where friendships are
-                            made and futures are shaped."
-                        </p>
-                    </div>
-                </section>
 
-                {/* This section appears to be a duplicate of Section 2 from your HTML.
-            If it's intentional, keep it. Otherwise, you might want to remove or modify it.
-            For now, I'm including it as is. */}
-                <section
-                    className="flex flex-col md:flex-row-reverse items-center bg-white rounded-xl shadow-lg p-6 mb-10 md:mb-16"
-                >
-                    <div className="md:w-1/3 flex flex-col items-center mb-6 md:mb-0 md:ml-8">
-                        <img
-                            src="https://placehold.co/400x400/28a745/ffffff?text=Head+of+Academics+Image"
-                            alt="Dr. Sarah Chen"
-                            className="w-full h-auto rounded-lg shadow-md object-cover max-w-xs md:max-w-full"
-                        />
-                        <div className="text-center mt-3">
-                            <p className="font-semibold text-lg text-green-700">Dr. Sarah Chen</p>
-                            <p className="text-sm text-gray-600">Head of Academics</p>
+                        {/* Collaboration */}
+                        <div className="bg-white rounded-lg shadow-md p-6 text-center border-t-4 border-purple-500">
+                            <svg
+                                className="w-12 h-12 text-purple-500 mx-auto mb-4"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                                xmlns="http://www.w3.org/2000/svg"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth="2"
+                                    d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"
+                                />
+                            </svg>
+                            <h4 className="text-xl font-semibold text-gray-800 mb-2">Collaboration</h4>
+                            <p className="text-gray-600 text-sm">
+                                Fostering a connected environment for all stakeholders.
+                            </p>
+                        </div>
+
+                        {/* Excellence */}
+                        <div className="bg-white rounded-lg shadow-md p-6 text-center border-t-4 border-pink-500">
+                            <svg
+                                className="w-12 h-12 text-pink-500 mx-auto mb-4"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                                xmlns="http://www.w3.org/2000/svg"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth="2"
+                                    d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L3 12l5.714-2.143L11 3z"
+                                />
+                            </svg>
+                            <h4 className="text-xl font-semibold text-gray-800 mb-2">Excellence</h4>
+                            <p className="text-gray-600 text-sm">
+                                Committed to delivering high-quality, reliable solutions.
+                            </p>
                         </div>
                     </div>
-                    <div className="md:w-2/3 text-center md:text-right">
-                        {/* Section heading with Playfair Display font */}
-                        <h3 className="text-3xl font-bold text-green-800 mb-4 font-['Playfair_Display']">
-                            Our Commitment to Academic Excellence
-                        </h3>
-                        <p className="text-gray-700 leading-relaxed text-lg">
-                            "Our curriculum at CampusCore is designed to be rigorous, engaging,
-                            and relevant. We encourage critical thinking, creativity, and
-                            problem-solving skills through innovative teaching methodologies.
-                            Our goal is to inspire a love for learning and equip students with
-                            the knowledge and tools they need to succeed in a rapidly changing
-                            world."
-                        </p>
-                    </div>
                 </section>
-            </main>
+            </div>
+
+            {/* Call to Action */}
+            <section className="max-w-4xl mx-auto text-center bg-gray-50 rounded-xl p-8 shadow-inner mt-10">
+                <h3 className="text-2xl font-bold text-gray-900 mb-4 font-['Playfair_Display']">
+                    Join the Campus Core Community!
+                </h3>
+                <p className="text-gray-700 mb-6">
+                    Explore how Campus Core can transform your academic journey.
+                </p>
+                <a
+                    href="/login"
+                    className="inline-block bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-full transition-all duration-300 transform hover:scale-105 shadow-lg"
+                >
+                    Get Started Today
+                </a>
+            </section>
         </div>
     );
 };

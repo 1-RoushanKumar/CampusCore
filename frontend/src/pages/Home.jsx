@@ -9,9 +9,11 @@ import g5 from "../assets/images/g5.jpg";
 import g6 from "../assets/images/g6.jpg";
 import g7 from "../assets/images/g7.jpg";
 import g8 from "../assets/images/g8.jpg";
-import h1 from "../assets/images/h1.jpg";
-import h2 from "../assets/images/h2.jpg";
-import h3 from "../assets/images/h3.jpg";
+import h6 from "../assets/images/h6.jpg";
+import h4 from "../assets/images/h4.jpg";
+import h5 from "../assets/images/h5.jpg";
+import h7 from "../assets/images/h7.jpg";
+import h8 from "../assets/images/h8.jpg";
 
 import {
     faGraduationCap,
@@ -26,9 +28,11 @@ import api from "../services/api";
 
 // Dummy data for image carousel (replace with real image URLs from backend if available)
 const carouselImages = [
-    h1,
-    h2,
-    h3
+    h4,
+    h5,
+    h6,
+    h7,
+    h8
 ];
 
 // Dummy data for gallery (replace with real image URLs from backend if available)
@@ -50,6 +54,11 @@ const Home = () => {
     const [newsError, setNewsError] = useState(null);
     const [isHoveringCarousel, setIsHoveringCarousel] = useState(false);
     const [isHoveringNews, setIsHoveringNews] = useState(false);
+
+    useEffect(() => {
+        // Scroll to the top of the page when the component mounts
+        window.scrollTo(0, 0);
+    }, []);
 
     // Effect for Image Carousel auto-slide
     useEffect(() => {
@@ -109,7 +118,7 @@ const Home = () => {
                         key={index}
                         src={image}
                         alt={`Campus Life ${index + 1}`}
-                        className={`absolute top-0 left-0 w-full h-full object-cover transition-all duration-1000 ease-in-out transform ${
+                        className={`absolute top-0 left-0 w-full h-full object-cover transition-all duration-1000 ease-in-out transform ${ // Changed object-contain to object-cover
                             index === currentSlide
                                 ? "opacity-100 scale-100"
                                 : "opacity-0 scale-105"
@@ -118,11 +127,14 @@ const Home = () => {
                 ))}
 
                 <div
-                    // Reduced black opacity from /15 to /5 and /10 to /3
-                    className="absolute inset-0 bg-gradient-to-t from-black/5 via-transparent to-black/3 flex flex-col items-center justify-center text-white text-center p-4">
+                    // Option 1: Remove gradient or make it almost invisible
+                    // If you want *no* darkening effect from the overlay itself, just remove bg-gradient-to-t
+                    // or use a very very faint black like black/0.1 if that's supported or transparent colors.
+                    // For practical purposes, removing it makes it most transparent.
+                    className="absolute inset-0 flex flex-col items-center justify-center text-white text-center p-4">
                     <div
-                        // Reduced white opacity from /5 to /1, and hover from /10 to /3
-                        // Reduced border opacity from /10 to /5
+                        // Keep bg-white/1 for the blur effect but adjust its opacity if needed
+                        // Consider increasing backdrop-blur for more separation if removing gradient
                         className="bg-white/1 backdrop-blur-md rounded-3xl p-8 sm:p-12 border border-white/5 shadow-2xl max-w-4xl w-full mx-4 hover:bg-white/3 transition-all duration-500">
                         <h1 className="text-4xl sm:text-6xl lg:text-7xl font-extrabold mb-6 drop-shadow-2xl bg-gradient-to-r from-white via-blue-100 to-white bg-clip-text text-transparent leading-tight">
                             Empowering Future Leaders
@@ -172,7 +184,7 @@ const Home = () => {
                 <section className="text-center mb-16">
                     <h2 className="text-5xl sm:text-6xl lg:text-7xl font-extrabold text-gray-900 mb-8 leading-tight">
                         Welcome to <span
-                        className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Campus App!</span>
+                        className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Campus Core!</span>
                     </h2>
                     <p className="text-xl sm:text-2xl text-gray-700 max-w-4xl mx-auto mb-12 leading-relaxed">
                         Your comprehensive platform for seamless academic management, communication, and growth.
@@ -306,7 +318,7 @@ const Home = () => {
                                 <img
                                     src={image}
                                     alt={`Gallery Image ${index + 1}`}
-                                    className="w-full h-48 sm:h-56 object-cover transition-transform duration-500 group-hover:scale-110"
+                                    className="w-full h-48 sm:h-56 object-cover transition-transform duration-500 group-hover:scale-110" // Changed object-contain to object-cover
                                 />
                                 <div
                                     className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500 flex items-end justify-center pb-6">
