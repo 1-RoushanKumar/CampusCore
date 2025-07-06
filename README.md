@@ -208,12 +208,80 @@ The project follows a clean architecture pattern with:
 
 ## 📝 API Endpoints
 
-- `/api/auth/**` - Authentication endpoints
-- `/api/admin/**` - Admin management
-- `/api/student/**` - Student operations
-- `/api/educator/**` - Educator operations
-- `/api/news/**` - News management
-- `/api/upload/**` - File upload
+### Admin Endpoints
+
+#### Subjects
+- **GET /api/admin/subjects**: Get all subjects (with pagination)
+- **GET /api/admin/subjects/{id}**: Get a subject by ID
+- **POST /api/admin/subjects**: Create a new subject
+- **PUT /api/admin/subjects/{id}**: Update an existing subject
+- **DELETE /api/admin/subjects/{id}**: Delete a subject
+- **GET /api/admin/subjects/count**: Get the total count of subjects
+
+#### Students
+- **GET /api/admin/students**: Get all students (with pagination)
+- **GET /api/admin/students/{id}**: Get a student by ID
+- **POST /api/admin/students**: Create a new student (with profile image upload)
+- **PUT /api/admin/students/{id}**: Update an existing student (with profile image upload)
+- **DELETE /api/admin/students/{id}**: Delete a student
+- **GET /api/admin/students/count**: Get the total count of students
+
+#### News
+- **GET /api/admin/news**: Get all news articles (with pagination)
+- **GET /api/admin/news/{id}**: Get a news article by ID
+- **POST /api/admin/news**: Create a new news article
+- **PUT /api/admin/news/{id}**: Update an existing news article
+- **DELETE /api/admin/news/{id}**: Delete a news article
+- **GET /api/admin/news/published/count**: Get the total count of published news articles
+
+#### Educators
+- **GET /api/admin/educators**: Get all educators (with pagination)
+- **GET /api/admin/educators/{id}**: Get an educator by ID
+- **POST /api/admin/educators**: Create a new educator (with profile image upload)
+- **PUT /api/admin/educators/{id}**: Update an existing educator (with profile image upload)
+- **DELETE /api/admin/educators/{id}**: Delete an educator
+- **GET /api/admin/educators/count**: Get the total count of educators
+
+#### Classes
+- **GET /api/admin/classes**: Get all classes (with pagination)
+- **GET /api/admin/classes/{id}**: Get a class by ID
+- **POST /api/admin/classes**: Create a new class
+- **PUT /api/admin/classes/{id}**: Update an existing class
+- **DELETE /api/admin/classes/{id}**: Delete a class
+- **GET /api/admin/classes/count**: Get the total count of classes
+
+### Educator Endpoints
+
+- **GET /api/educator/students/{studentId}/classes/{classId}/feedback**: Get feedback for a specific student in a class
+- **POST /api/educator/students/{studentId}/classes/{classId}/feedback**: Create or update feedback for a student in a class
+- **GET /api/educator/students/{studentId}**: Get details of a specific student
+- **GET /api/educator/profile**: Get the educator's own profile
+- **GET /api/educator/classes**: Get all classes taught by the educator
+- **GET /api/educator/classes/{classId}/students**: Get students enrolled in a specific class (with pagination)
+
+### Student Endpoints
+
+- **GET /api/student/subjects/all**: Get all subjects available to the student
+- **GET /api/student/profile**: Get the student's own profile
+- **GET /api/student/feedback**: Get all feedback for the student
+- **GET /api/student/enrolled-class**: Get the class the student is currently enrolled in
+- **GET /api/student/classes/all**: Get all classes available to the student
+
+### Authentication Endpoints
+
+- **POST /api/auth/register/admin**: Register a new admin user
+- **POST /api/auth/login**: Log in a user
+- **POST /api/auth/forgot-password/reset**: Reset a forgotten password
+- **POST /api/auth/forgot-password/request**: Request a password reset
+
+### Public Endpoints
+
+- **GET /api/public/news/{id}**: Get details of a published news article
+- **GET /api/public/news/titles**: Get titles of all published news articles
+
+### File Uploads
+
+- **GET /api/uploads/{filename}**: Serve (retrieve) a file by its filename
 
 ## 🤝 Contributing
 
