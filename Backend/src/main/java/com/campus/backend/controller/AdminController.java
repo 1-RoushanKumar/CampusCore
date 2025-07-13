@@ -24,7 +24,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/admin")
-@PreAuthorize("hasRole('ROLE_ADMIN')") // Only accessible by ADMIN role
+@PreAuthorize("hasRole('ROLE_ADMIN')")
 public class AdminController {
 
     private final AdminService adminService;
@@ -35,7 +35,6 @@ public class AdminController {
         this.imageUploadService = imageUploadService;
     }
 
-    // --- Global Exception Handler for Validation ---
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public Map<String, String> handleValidationExceptions(MethodArgumentNotValidException ex) {
@@ -47,8 +46,6 @@ public class AdminController {
         });
         return errors;
     }
-
-    // --- Exception Handler for Resource Not Found ---
     @ResponseStatus(HttpStatus.NOT_FOUND)
     @ExceptionHandler(ResourceNotFoundException.class)
     public Map<String, String> handleResourceNotFoundException(ResourceNotFoundException ex) {
@@ -57,7 +54,6 @@ public class AdminController {
         return error;
     }
 
-    // --- Exception Handler for Illegal Arguments (e.g., duplicate username/email, invalid data) ---
     @ResponseStatus(HttpStatus.CONFLICT)
     @ExceptionHandler(IllegalArgumentException.class)
     public Map<String, String> handleIllegalArgumentException(IllegalArgumentException ex) {
@@ -66,7 +62,6 @@ public class AdminController {
         return error;
     }
 
-    // --- Exception Handler for IO Exceptions during file upload/delete ---
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     @ExceptionHandler(IOException.class)
     public Map<String, String> handleIOException(IOException ex) {
@@ -75,23 +70,20 @@ public class AdminController {
         return error;
     }
 
-
-    // --- Educator Management ---
-
     @PostMapping(value = "/educators", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     public ResponseEntity<?> createEducator(
             @RequestPart("educator") @Valid EducatorDto educatorDto,
             @RequestPart(value = "profileImage", required = false) MultipartFile profileImage) {
         try {
             if (profileImage != null && !profileImage.isEmpty()) {
-                String imageUrl = imageUploadService.uploadFile(profileImage); // Potential IOException
+                String imageUrl = imageUploadService.uploadFile(profileImage);
                 educatorDto.setProfileImageUrl(imageUrl);
             }
             EducatorDto createdEducator = adminService.createEducator(educatorDto);
             return new ResponseEntity<>(createdEducator, HttpStatus.CREATED);
         } catch (ResourceNotFoundException e) {
             return new ResponseEntity<>(Map.of("error", e.getMessage()), HttpStatus.BAD_REQUEST);
-        } catch (IOException e) { // Catch IOException here
+        } catch (IOException e) {
             return new ResponseEntity<>(Map.of("error", "Image upload failed: " + e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
@@ -116,14 +108,14 @@ public class AdminController {
             @RequestPart("educator") @Valid EducatorDto educatorDto,
             @RequestPart(value = "profileImage", required = false) MultipartFile profileImage) {
         try {
-            EducatorDto existingEducator = null; // Declare outside try for scope if needed elsewhere
+            EducatorDto existingEducator = null;
 
             if (profileImage != null && !profileImage.isEmpty()) {
                 existingEducator = adminService.getEducatorById(id);
                 if (existingEducator.getProfileImageUrl() != null && !existingEducator.getProfileImageUrl().isEmpty()) {
                     imageUploadService.deleteFile(existingEducator.getProfileImageUrl());
                 }
-                String imageUrl = imageUploadService.uploadFile(profileImage); // Potential IOException
+                String imageUrl = imageUploadService.uploadFile(profileImage);
                 educatorDto.setProfileImageUrl(imageUrl);
             } else if (educatorDto.getProfileImageUrl() == null) {
                 existingEducator = adminService.getEducatorById(id);
@@ -137,7 +129,7 @@ public class AdminController {
             return ResponseEntity.ok(updatedEducator);
         } catch (ResourceNotFoundException e) {
             return new ResponseEntity<>(Map.of("error", e.getMessage()), HttpStatus.BAD_REQUEST);
-        } catch (IOException e) { // Catch IOException here
+        } catch (IOException e) {
             return new ResponseEntity<>(Map.of("error", "Image upload/delete failed: " + e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
@@ -148,22 +140,20 @@ public class AdminController {
         return ResponseEntity.noContent().build();
     }
 
-    // --- Student Management ---
-
     @PostMapping(value = "/students", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     public ResponseEntity<?> createStudent(
             @RequestPart("student") @Valid StudentDto studentDto,
             @RequestPart(value = "profileImage", required = false) MultipartFile profileImage) {
         try {
             if (profileImage != null && !profileImage.isEmpty()) {
-                String imageUrl = imageUploadService.uploadFile(profileImage); // Potential IOException
+                String imageUrl = imageUploadService.uploadFile(profileImage);
                 studentDto.setProfileImageUrl(imageUrl);
             }
             StudentDto createdStudent = adminService.createStudent(studentDto);
             return new ResponseEntity<>(createdStudent, HttpStatus.CREATED);
         } catch (ResourceNotFoundException e) {
             return new ResponseEntity<>(Map.of("error", e.getMessage()), HttpStatus.BAD_REQUEST);
-        } catch (IOException e) { // Catch IOException here
+        } catch (IOException e) {
             return new ResponseEntity<>(Map.of("error", "Image upload failed: " + e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
@@ -188,14 +178,14 @@ public class AdminController {
             @RequestPart("student") @Valid StudentDto studentDto,
             @RequestPart(value = "profileImage", required = false) MultipartFile profileImage) {
         try {
-            StudentDto existingStudent = null; // Declare outside try for scope if needed elsewhere
+            StudentDto existingStudent = null;
 
             if (profileImage != null && !profileImage.isEmpty()) {
                 existingStudent = adminService.getStudentById(id);
                 if (existingStudent.getProfileImageUrl() != null && !existingStudent.getProfileImageUrl().isEmpty()) {
                     imageUploadService.deleteFile(existingStudent.getProfileImageUrl());
                 }
-                String imageUrl = imageUploadService.uploadFile(profileImage); // Potential IOException
+                String imageUrl = imageUploadService.uploadFile(profileImage);
                 studentDto.setProfileImageUrl(imageUrl);
             } else if (studentDto.getProfileImageUrl() == null) {
                 existingStudent = adminService.getStudentById(id);
@@ -209,7 +199,7 @@ public class AdminController {
             return ResponseEntity.ok(updatedStudent);
         } catch (ResourceNotFoundException e) {
             return new ResponseEntity<>(Map.of("error", e.getMessage()), HttpStatus.BAD_REQUEST);
-        } catch (IOException e) { // Catch IOException here
+        } catch (IOException e) {
             return new ResponseEntity<>(Map.of("error", "Image upload/delete failed: " + e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
@@ -219,8 +209,6 @@ public class AdminController {
         adminService.deleteStudent(id);
         return ResponseEntity.noContent().build();
     }
-
-    // --- Class Management ---
 
     @PostMapping("/classes")
     public ResponseEntity<?> createClass(@Valid @RequestBody ClassDto classDto) {
@@ -262,9 +250,6 @@ public class AdminController {
         return ResponseEntity.noContent().build();
     }
 
-
-    // --- Subject Management ---
-
     @PostMapping("/subjects")
     public ResponseEntity<?> createSubject(@Valid @RequestBody SubjectDto subjectDto) {
         SubjectDto createdSubject = adminService.createSubject(subjectDto);
@@ -297,7 +282,6 @@ public class AdminController {
         return ResponseEntity.noContent().build();
     }
 
-    // --- Dashboard Count Endpoints ---
     @GetMapping("/students/count")
     public ResponseEntity<Long> getStudentsCount() {
         long count = adminService.getStudentsCount();
