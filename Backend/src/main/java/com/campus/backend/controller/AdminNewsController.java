@@ -18,8 +18,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/admin/news") // Specific path for admin news management
-@PreAuthorize("hasRole('ROLE_ADMIN')") // Ensure only admins can access these endpoints
+@RequestMapping("/api/admin/news")
+@PreAuthorize("hasRole('ROLE_ADMIN')")
 public class AdminNewsController {
 
     private final NewsService newsService;
@@ -29,7 +29,6 @@ public class AdminNewsController {
         this.newsService = newsService;
     }
 
-    // --- Exception Handlers (can be moved to a global @ControllerAdvice if preferred) ---
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public Map<String, String> handleValidationExceptions(MethodArgumentNotValidException ex) {
@@ -50,8 +49,6 @@ public class AdminNewsController {
         return error;
     }
 
-    // --- News Management Endpoints ---
-
     @PostMapping
     public ResponseEntity<NewsResponse> createNews(@Valid @RequestBody NewsRequest newsRequest) {
         NewsResponse createdNews = newsService.createNews(newsRequest);
@@ -61,7 +58,7 @@ public class AdminNewsController {
     @PutMapping("/{id}")
     public ResponseEntity<NewsResponse> updateNews(@PathVariable Long id, @Valid @RequestBody NewsRequest newsRequest) {
         NewsResponse updatedNews = newsService.updateNews(id, newsRequest);
-        return ResponseEntity.ok(updatedNews); // Service will throw ResourceNotFoundException if ID not found
+        return ResponseEntity.ok(updatedNews);
     }
 
     @DeleteMapping("/{id}")
@@ -84,7 +81,7 @@ public class AdminNewsController {
         return ResponseEntity.ok(newsPage);
     }
 
-    @GetMapping("/published/count") // This path will be /api/admin/news/published/count
+    @GetMapping("/published/count")
     public ResponseEntity<Long> getPublishedNewsCount() {
         long count = newsService.getPublishedNewsCount();
         return ResponseEntity.ok(count);
