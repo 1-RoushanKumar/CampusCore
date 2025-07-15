@@ -18,7 +18,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/educator")
-@PreAuthorize("hasRole('ROLE_EDUCATOR')") // Only accessible by EDUCATOR role
+@PreAuthorize("hasRole('ROLE_EDUCATOR')")
 public class EducatorController {
 
     private final EducatorService educatorService;

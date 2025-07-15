@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/auth")
-@CrossOrigin("*") // Allow all origins for CORS; adjust as needed for security
+@CrossOrigin("*")
 public class AuthController {
 
     private final AuthService authService;
@@ -34,19 +34,16 @@ public class AuthController {
         return new ResponseEntity<>(registeredUser, HttpStatus.CREATED);
     }
 
-    // New Endpoints for Forgot Password
     @PostMapping("/forgot-password/request")
-    public ResponseEntity<String> requestPasswordReset(@RequestBody ForgotPasswordRequest request) { // <--- CHANGE HERE
-        authService.requestPasswordReset(request.getEmail()); // <--- EXTRACT EMAIL FROM DTO
+    public ResponseEntity<String> requestPasswordReset(@RequestBody ForgotPasswordRequest request) {
+        authService.requestPasswordReset(request.getEmail());
         return new ResponseEntity<>("Password reset link sent to your email if it exists.", HttpStatus.OK);
     }
 
-    // DTO for new password (optional, could use a map or direct String for simplicity)
     public static class ResetPasswordRequest {
         private String token;
         private String newPassword;
 
-        // Getters and Setters
         public String getToken() {
             return token;
         }
@@ -69,7 +66,4 @@ public class AuthController {
         authService.resetPassword(request.getToken(), request.getNewPassword());
         return new ResponseEntity<>("Your password has been reset successfully.", HttpStatus.OK);
     }
-
-    // Educators and Students will be created by Admin through AdminController, not via direct registration
-    // This design choice is based on the prompt "Admin can: Create login credentials for all users"
 }

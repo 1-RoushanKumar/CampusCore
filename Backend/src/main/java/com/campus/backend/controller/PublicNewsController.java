@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/public/news") // Publicly accessible path for news
+@RequestMapping("/api/public/news")
 public class PublicNewsController {
 
     private final NewsService newsService;
@@ -24,7 +24,6 @@ public class PublicNewsController {
         this.newsService = newsService;
     }
 
-    // --- Exception Handler for Resource Not Found (specific to public view) ---
     @ResponseStatus(HttpStatus.NOT_FOUND)
     @ExceptionHandler(ResourceNotFoundException.class)
     public Map<String, String> handleResourceNotFoundException(ResourceNotFoundException ex) {
@@ -32,8 +31,6 @@ public class PublicNewsController {
         error.put("error", ex.getMessage());
         return error;
     }
-
-    // --- Public News Endpoints ---
 
     @GetMapping("/titles")
     public ResponseEntity<List<NewsTitleResponse>> getPublishedNewsTitles() {
@@ -44,6 +41,6 @@ public class PublicNewsController {
     @GetMapping("/{id}")
     public ResponseEntity<NewsResponse> getPublishedNewsDetail(@PathVariable Long id) {
         NewsResponse news = newsService.getPublishedNewsDetail(id);
-        return ResponseEntity.ok(news); // Service will throw ResourceNotFoundException if not found or not published
+        return ResponseEntity.ok(news);
     }
 }

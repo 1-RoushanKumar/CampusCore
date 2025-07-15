@@ -17,8 +17,8 @@ import java.util.List;
 import java.util.Optional; // Import Optional
 
 @RestController
-@RequestMapping("/api/student") // Base path for student-related endpoints
-@PreAuthorize("hasRole('ROLE_STUDENT')") // Only accessible by STUDENT role
+@RequestMapping("/api/student")
+@PreAuthorize("hasRole('ROLE_STUDENT')")
 public class StudentController {
 
     private final StudentService studentService;
@@ -46,14 +46,13 @@ public class StudentController {
         return ResponseEntity.ok(feedback);
     }
 
-    // Corrected endpoint paths: removed redundant "/student"
-    @GetMapping("/subjects/all") // Corrected path to resolve to /api/student/subjects/all
+    @GetMapping("/subjects/all")
     public ResponseEntity<List<SubjectDto>> getAllSubjectsForStudent() {
         List<SubjectDto> subjects = studentService.getAllSubjectsForStudent();
         return ResponseEntity.ok(subjects);
     }
 
-    @GetMapping("/classes/all") // Corrected path to resolve to /api/student/classes/all
+    @GetMapping("/classes/all")
     public ResponseEntity<List<ClassDto>> getAllClassesForStudent() {
         List<ClassDto> classes = studentService.getAllClassesForStudent();
         return ResponseEntity.ok(classes);

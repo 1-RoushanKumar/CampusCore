@@ -34,7 +34,7 @@ public class ImageUploadController {
             if (resource.exists() || resource.isReadable()) {
                 String contentType = Files.probeContentType(file);
                 if (contentType == null) {
-                    contentType = "application/octet-stream"; // Default content type
+                    contentType = "application/octet-stream";
                 }
                 return ResponseEntity.ok()
                         .contentType(MediaType.parseMediaType(contentType))
